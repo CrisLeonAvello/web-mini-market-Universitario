@@ -323,14 +323,57 @@
     font-weight: 500;
     font-size: 0.95rem;
 }
+.wishlist-stock {
+    font-size: 0.8rem;
+    font-weight: 500;
+}
+.wishlist-stock.in-stock {
+    color: #28a745;
+}
+.wishlist-stock.out-of-stock {
+    color: #f44336;
+}
+.wishlist-actions {
+    display: flex;
+    gap: 0.5rem;
+    align-items: center;
+}
+.add-to-cart-wishlist {
+    background: #4285f4;
+    border: none;
+    color: white;
+    font-size: 1rem;
+    cursor: pointer;
+    border-radius: 6px;
+    padding: 0.4rem 0.6rem;
+    transition: all 0.2s;
+    min-width: 32px;
+    height: 32px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+.add-to-cart-wishlist:hover:not(:disabled) {
+    background: #3367d6;
+    transform: scale(1.05);
+}
+.add-to-cart-wishlist:disabled {
+    background: #6c757d;
+    cursor: not-allowed;
+    opacity: 0.6;
+}
 .remove-wishlist {
     background: none;
     border: none;
     color: #f44336;
     font-size: 1.1rem;
     cursor: pointer;
-    margin-left: 0.5rem;
     transition: color 0.2s;
+    min-width: 24px;
+    height: 24px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
 }
 .remove-wishlist:hover {
     color: #b71c1c;
@@ -824,8 +867,8 @@
 /* Sistema de notificaciones toast */
 .notification-container {
     position: fixed;
-    top: 20px;
-    right: 20px;
+    bottom: 20px;
+    left: 20px;
     z-index: 10000;
     pointer-events: none;
 }
@@ -844,7 +887,7 @@
     min-width: 300px;
     max-width: 400px;
     opacity: 0;
-    transform: translateX(100%);
+    transform: translateX(-100%);
     transition: all 0.3s ease;
     pointer-events: auto;
 }
@@ -888,9 +931,9 @@
 /* Responsive para notificaciones */
 @media (max-width: 768px) {
     .notification-container {
-        right: 10px;
         left: 10px;
-        top: 10px;
+        right: 10px;
+        bottom: 10px;
     }
     
     .notification {
@@ -1162,7 +1205,24 @@ body {
     font-size: 0.8rem;
 }
 .out-of-stock {
-    background: #f44336 !important;
+    filter: grayscale(100%) !important;
+    opacity: 0.7 !important;
+    position: relative;
+}
+.out-of-stock::after {
+    content: 'SIN STOCK';
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    background: rgba(244, 67, 54, 0.9);
+    color: white;
+    padding: 4px 8px;
+    border-radius: 4px;
+    font-size: 0.7rem;
+    font-weight: bold;
+    letter-spacing: 1px;
+    z-index: 2;
 }
 .add-to-cart.disabled {
     background: #ccc !important;
