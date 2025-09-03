@@ -10,6 +10,15 @@ class LoadingScreen {
 
     // Inicializar la pantalla de carga
     init() {
+        // Asegurar que el elemento existe
+        if (!this.loadingScreen) {
+            console.warn('Elemento loading-screen no encontrado');
+            return;
+        }
+
+        // Mostrar inmediatamente la pantalla de carga
+        this.loadingScreen.style.display = 'flex';
+        
         // Prevenir scroll mientras carga
         document.body.style.overflow = 'hidden';
         
@@ -120,17 +129,29 @@ class LoadingScreen {
 // Inicializar la pantalla de carga inmediatamente
 const loadingScreen = new LoadingScreen();
 
-// Inicializar tan pronto como se cargue el script
-if (document.readyState === 'loading') {
-    document.addEventListener('DOMContentLoaded', () => {
-        loadingScreen.init();
-    });
-} else {
-    loadingScreen.init();
-}
+// Inicializar inmediatamente sin esperar al DOM
+loadingScreen.init();
 
 // Hacer disponible globalmente para debugging
 window.loadingScreen = loadingScreen;
+
+// Funciones de debug
+window.showLoadingScreen = function() {
+    const screen = document.getElementById('loading-screen');
+    if (screen) {
+        screen.style.display = 'flex';
+        screen.classList.remove('fade-out');
+        document.body.style.overflow = 'hidden';
+        console.log('🔄 Pantalla de carga mostrada manualmente');
+    }
+};
+
+window.hideLoadingScreen = function() {
+    if (window.loadingScreen) {
+        window.loadingScreen.forceHide();
+        console.log('❌ Pantalla de carga ocultada manualmente');
+    }
+};
 
 // Opcional: Escuchar eventos personalizados para mostrar progreso
 document.addEventListener('resourceLoaded', function(e) {

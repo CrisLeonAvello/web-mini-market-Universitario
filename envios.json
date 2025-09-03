@@ -1,0 +1,26 @@
+[
+  {
+    "tipo": "Retiro en tienda",
+    "descripcion": "Retira tu pedido en nuestras oficinas universitarias",
+    "costo": 0,
+    "tiempo_entrega": "Inmediato",
+    "disponible": true,
+    "icon": "🏪"
+  },
+  {
+    "tipo": "Envío estándar",
+    "descripcion": "Entrega a domicilio en 3-5 días hábiles",
+    "costo": 2990,
+    "tiempo_entrega": "3-5 días hábiles",
+    "disponible": true,
+    "icon": "📦"
+  },
+  {
+    "tipo": "Envío express",
+    "descripcion": "Entrega rápida en 24-48 horas",
+    "costo": 4990,
+    "tiempo_entrega": "24-48 horas",
+    "disponible": true,
+    "icon": "⚡"
+  }
+]

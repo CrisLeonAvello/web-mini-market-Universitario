@@ -60,7 +60,7 @@ function showNotification(message, type = 'add') {
         notification.classList.add('show');
     }, 100);
     
-    // Remover después de 3 segundos
+    // Remover después de 5 segundos
     setTimeout(() => {
         notification.classList.remove('show');
         setTimeout(() => {
@@ -68,7 +68,7 @@ function showNotification(message, type = 'add') {
                 notification.parentNode.removeChild(notification);
             }
         }, 300);
-    }, 3000);
+    }, 5000);
 }
 
 // Función para comprar todos los productos de la wishlist
@@ -117,18 +117,16 @@ function clearAllWishlist() {
         return;
     }
     
-    // Confirmar acción
-    if (confirm(`¿Estás seguro de que quieres eliminar todos los ${wishlist.length} productos de tu lista de favoritos?`)) {
-        setWishlist([]);
-        renderWishlistMenu();
-        
-        // Re-renderizar productos para actualizar estados de corazones
-        if (typeof renderProducts === 'function' && typeof filteredProducts !== 'undefined') {
-            renderProducts(filteredProducts);
-        }
-        
-        showNotification('🗑️ Lista de favoritos vaciada completamente', 'success');
+    // Eliminar directamente sin confirmación
+    setWishlist([]);
+    renderWishlistMenu();
+    
+    // Re-renderizar productos para actualizar estados de corazones
+    if (typeof renderProducts === 'function' && typeof filteredProducts !== 'undefined') {
+        renderProducts(filteredProducts);
     }
+    
+    showNotification('🗑️ Lista de favoritos vaciada completamente', 'success');
 }
 
 function toggleWishlist(productId) {
@@ -212,11 +210,36 @@ function renderWishlistMenu() {
                     <div class="wishlist-title">${product.titulo}</div>
                     <div class="wishlist-brand">${product.marca}</div>
                     <div class="wishlist-price">$${product.precio.toLocaleString()}</div>
+                    <div class="wishlist-stock ${product.stock > 0 ? 'in-stock' : 'out-of-stock'}">
+                        ${product.stock > 0 ? `Stock: ${product.stock}` : 'Sin stock'}
+                    </div>
                 </div>
-                <button class="remove-wishlist" data-id="${product.id}" title="Quitar de favoritos">✕</button>
+                <div class="wishlist-actions">
+                    <button class="add-to-cart-wishlist" data-id="${product.id}" 
+                            title="Agregar al carrito" 
+                            ${product.stock === 0 ? 'disabled' : ''}>
+                        🛒
+                    </button>
+                    <button class="remove-wishlist" data-id="${product.id}" title="Quitar de favoritos">✕</button>
+                </div>
             </div>
         `;
     }).join('');
+    
+    // Agregar al carrito desde el menú wishlist
+    list.querySelectorAll('.add-to-cart-wishlist').forEach(btn => {
+        btn.addEventListener('click', function(e) {
+            e.stopPropagation();
+            e.preventDefault();
+            const id = this.getAttribute('data-id');
+            
+            if (typeof addToCart === 'function') {
+                addToCart(id);
+            } else {
+                showNotification('Error: Función de carrito no disponible', 'warning');
+            }
+        });
+    });
     
     // Quitar de favoritos desde el menú
     list.querySelectorAll('.remove-wishlist').forEach(btn => {

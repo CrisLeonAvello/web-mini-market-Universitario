@@ -7,12 +7,56 @@
     <link rel="stylesheet" href="styles.css">
 </head>
 <body>
+    <!-- Pantalla de carga -->
+    <div id="loading-screen" class="loading-screen">
+        <div class="loading-content">
+            <div class="loading-logo">
+                <h1>📚 StudiMarket</h1>
+                <p>Tu tienda universitaria online</p>
+            </div>
+            <div class="loading-spinner">
+                <div class="spinner"></div>
+            </div>
+            <div class="loading-text">
+                <p>Cargando productos...</p>
+                <div class="loading-progress">
+                    <div class="progress-bar"></div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Contenedor de notificaciones -->
+    <div id="notification-container" class="notification-container"></div>
+    
     <header class="header">
         <div class="logo">StudiMarket</div>
         <nav class="nav-buttons">
             <a href="#" class="nav-btn primary">🔍 Catálogo</a>
-            <a href="#" class="nav-btn">🛒 Carrito</a>
-            <a href="#" class="nav-btn">❤️ Favoritos</a>
+            <button class="open-cart-btn nav-btn" style="padding: 8px 16px; font-size: 15px; background: #fff; color: #4285f4; border: 1px solid #4285f4; border-radius: 8px; cursor: pointer; position: relative;">
+                🛒 Carrito
+                <span id="cart-counter" style="display: none; position: absolute; top: -8px; right: -8px; background: #ff6b35; color: white; border-radius: 50%; width: 20px; height: 20px; font-size: 12px; text-align: center; line-height: 20px; font-weight: bold; box-shadow: 0 2px 4px rgba(0,0,0,0.2);">0</span>
+            </button>
+            <a href="#" class="nav-btn" id="wishlist-btn">❤️ Favoritos</a>
+        </nav>
+        <div id="wishlist-menu" class="wishlist-menu">
+            <div class="wishlist-header">
+                <span>Mis Favoritos</span>
+                <button id="close-wishlist" title="Cerrar">✕</button>
+            </div>
+            <div id="wishlist-list" class="wishlist-list">
+                <!-- Productos favoritos se insertan aquí -->
+            </div>
+            <div class="wishlist-actions">
+                <button id="buy-all-wishlist" class="wishlist-action-btn buy-all" title="Comprar todos los productos">
+                    🛒 Comprar Todo
+                </button>
+                <button id="clear-all-wishlist" class="wishlist-action-btn clear-all" title="Vaciar lista de favoritos">
+                    🗑️ Vaciar Lista
+                </button>
+            </div>
+            <div class="wishlist-empty">No tienes productos en favoritos.</div>
+        </div>
         </nav>
     </header>
     <main class="main-content">
@@ -29,7 +73,10 @@
         </div>
         <div class="filters-section">
             <aside class="filters">
-                <h3>Filtros</h3>
+                <div class="filters-header">
+                    <h3>Filtros</h3>
+                    <button id="reset-filters" class="reset-filters-btn" onclick="resetAllFilters()">🔄 Limpiar</button>
+                </div>
                 <div class="filter-group">
                     <h4>Categoría</h4>
                     <select class="filter-select">
@@ -42,19 +89,35 @@
                     </select>
                 </div>
                 <div class="filter-group">
-                    <h4>Rango de precio: $0 - $200.000</h4>
+                    <h4 id="price-range-label">Rango de precio: $0 - $200.000</h4>
                     <div class="price-range">
-                        <div class="price-slider"></div>
+                        <div class="price-inputs">
+                            <div class="price-input-group">
+                                <label for="min-price">Precio mínimo:</label>
+                                <input type="number" id="min-price" min="0" max="200000" value="0" step="1000" placeholder="0">
+                            </div>
+                            <div class="price-input-group">
+                                <label for="max-price">Precio máximo:</label>
+                                <input type="number" id="max-price" min="0" max="200000" value="200000" step="1000" placeholder="200000">
+                            </div>
+                        </div>
+                        <div class="price-actions">
+                            <button id="apply-price-filter" class="apply-filter-btn">Aplicar filtro</button>
+                            <button id="clear-price-filter" class="clear-filter-btn">Limpiar</button>
+                        </div>
                     </div>
                 </div>
                 <div class="filter-group">
-                    <h4>Rating mínimo: 0 estrellas</h4>
-                    <div class="rating-stars">
-                        <div class="star"></div>
-                        <div class="star"></div>
-                        <div class="star"></div>
-                        <div class="star"></div>
-                        <div class="star"></div>
+                    <h4 id="rating-label">Rating mínimo: 0 estrellas</h4>
+                    <div class="rating-stars" id="rating-filter">
+                        <div class="star" data-rating="1">★</div>
+                        <div class="star" data-rating="2">★</div>
+                        <div class="star" data-rating="3">★</div>
+                        <div class="star" data-rating="4">★</div>
+                        <div class="star" data-rating="5">★</div>
+                    </div>
+                    <div class="rating-clear">
+                        <button id="clear-rating" class="clear-btn">Limpiar filtro</button>
                     </div>
                 </div>
             </aside>
@@ -66,6 +129,370 @@
             </section>
         </div>
     </main>
+
+    <!-- Modal Carrito -->
+    <div id="cartModal" class="modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h2>Carrito de Compras</h2>
+                <span class="close">&times;</span>
+            </div>
+            <div id="cart-items-container">
+                <!-- Aquí se mostrarán los productos del carrito dinámicamente -->
+            </div>
+            <div class="cart-summary" id="cart-summary">
+                <p>Carrito vacío</p>
+            </div>
+            <button class="pay-btn" id="pay-btn" style="display: none;">💳 PROCEDE AL PAGO</button>
+        </div>
+    </div>
+
+    <!-- Modal Detalles del Producto -->
+    <div id="productModal" class="product-modal">
+        <div class="product-modal-content">
+            <div class="product-modal-header">
+                <h2>Detalles del Producto</h2>
+                <span class="product-modal-close">&times;</span>
+            </div>
+            <div class="product-modal-body">
+                <div class="product-modal-left">
+                    <img id="modal-product-image" src="" alt="Producto">
+                </div>
+                <div class="product-modal-right">
+                    <h3 id="modal-product-title">Título del Producto</h3>
+                    <p id="modal-product-brand" class="product-brand">Marca: </p>
+                    <p id="modal-product-description" class="product-description"></p>
+                    <div class="product-rating-section">
+                        <span id="modal-product-rating" class="rating-stars clickable-stars" title="Click para ver reseñas"></span>
+                        <span id="modal-product-rating-value" class="rating-value"></span>
+                    </div>
+                    <div id="modal-product-price" class="product-price">$0</div>
+                    <div id="modal-product-stock" class="product-stock"></div>
+                    <button id="modal-add-to-cart" class="modal-add-cart-btn">Agregar al Carrito</button>
+                    
+                    <!-- Solo pestaña de reseñas -->
+                    <div class="modal-tabs">
+                        <button class="tab-button" onclick="toggleComments()" data-tab="comments">💬 Ver Reseñas</button>
+                    </div>
+                    
+                    <!-- Sección de comentarios que se muestra/oculta -->
+                    <div id="comments-section" class="comments-section" style="display: none;">
+                        <div class="add-comment-section">
+                            <h3>💬 Agregar tu reseña</h3>
+                            <div class="new-comment-rating">
+                                <span>Tu calificación: </span>
+                                <span class="star-rating" data-rating="0">
+                                    <span class="star" data-value="1">☆</span>
+                                    <span class="star" data-value="2">☆</span>
+                                    <span class="star" data-value="3">☆</span>
+                                    <span class="star" data-value="4">☆</span>
+                                    <span class="star" data-value="5">☆</span>
+                                </span>
+                                <span style="color: #6c757d; font-size: 14px; margin-left: 10px; font-style: italic;">
+                                    (Requiere iniciar sesión)
+                                </span>
+                            </div>
+                            <textarea id="new-comment-text" placeholder="Inicia sesión para escribir tu reseña..." rows="4" disabled></textarea>
+                            <button id="submit-comment">� Iniciar Sesión para Reseñar</button>
+                        </div>
+                        <hr style="margin: 30px 0; border: none; border-top: 1px solid #ddd;">
+                        <div id="comments-list-inline">
+                            <!-- Los comentarios se cargarán aquí -->
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Modal Comentarios -->
+    <div id="commentsModal" class="comments-modal">
+        <div class="comments-modal-content">
+            <div class="comments-modal-header">
+                <h2>Reseñas de Producto</h2>
+                <span class="comments-modal-close">&times;</span>
+            </div>
+            <div id="comments-list" class="comments-modal-body">
+                <!-- Los comentarios se generarán aquí -->
+            </div>
+        </div>
+    </div>
+
+    <style>
+        .modal { display: none; position: fixed; z-index: 1000; left: 0; top: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.5); overflow: auto; }
+        .modal-content { background: #fff; margin: 50px auto; padding: 20px; border-radius: 12px; width: 90%; max-width: 600px; box-shadow: 0 4px 12px rgba(0,0,0,0.3); animation: slideDown 0.3s ease; }
+        .comments-modal { max-width: 700px; }
+        @keyframes slideDown { from { transform: translateY(-20px); opacity: 0; } to { transform: translateY(0); opacity: 1; } }
+        .modal-header { display: flex; justify-content: space-between; align-items: center; border-bottom: 2px solid #007bff; padding-bottom: 10px; }
+        .modal-header h2 { margin: 0; color: #007bff; }
+        .close { font-size: 22px; font-weight: bold; cursor: pointer; color: #555; }
+        .cart-item { display: flex; align-items: center; justify-content: space-between; margin: 20px 0; padding: 15px; background: #fafafa; border-radius: 10px; }
+        .cart-item img { width: 60px; height: auto; border-radius: 5px; }
+        .cart-item-info { flex: 1; margin-left: 15px; }
+        .cart-item-info h4 { margin: 0; font-size: 16px; }
+        .cart-item-info p { margin: 5px 0; color: #007bff; font-weight: bold; }
+        .cart-item-actions { display: flex; align-items: center; gap: 10px; }
+        .quantity-btn { border: none; padding: 5px 10px; border-radius: 50%; background: #e0e0e0; cursor: pointer; font-size: 18px; }
+        .delete-btn { background: #e74c3c; color: #fff; border: none; padding: 6px 12px; border-radius: 6px; cursor: pointer; }
+        .cart-summary { margin-top: 20px; padding: 15px; background: #f9f9f9; border-radius: 10px; }
+        .cart-summary div { display: flex; justify-content: space-between; margin: 8px 0; }
+        .cart-summary .total { font-size: 20px; font-weight: bold; color: #000; }
+        .pay-btn { display: block; width: 100%; margin-top: 20px; padding: 14px; font-size: 16px; background: #007bff; color: #fff; border: none; border-radius: 10px; cursor: pointer; }
+        .pay-btn:hover { background: #0056b3; }
+        
+        /* Nuevos estilos para modal de producto */
+        .product-modal { display: none; position: fixed; z-index: 1000; left: 0; top: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.6); overflow-y: auto; }
+        .product-modal-content { background: white; margin: 0; padding: 0; border-radius: 0; width: 100%; max-width: none; box-shadow: none; animation: modalSlideIn 0.3s ease; max-height: none; min-height: 100vh; }
+        .product-modal-header { display: flex; justify-content: space-between; align-items: center; padding: 20px 40px; border-bottom: 1px solid #eee; position: sticky; top: 0; background: white; z-index: 1001; }
+        .product-modal-header h2 { margin: 0; color: #4285f4; font-size: 28px; }
+        .product-modal-close { font-size: 32px; font-weight: bold; cursor: pointer; color: #666; transition: color 0.3s; }
+        .product-modal-close:hover { color: #4285f4; }
+        .product-modal-body { display: flex; padding: 40px; gap: 40px; max-width: 1200px; margin: 0 auto; }
+        .product-modal-left { flex: 1; }
+        .product-modal-left img { width: 100%; max-width: 400px; border-radius: 12px; box-shadow: 0 4px 8px rgba(0,0,0,0.1); }
+        .product-modal-right { flex: 1; display: flex; flex-direction: column; gap: 15px; }
+        .product-modal-right h3 { margin: 0; font-size: 28px; color: #333; }
+        .product-brand { color: #666; font-size: 16px; margin: 0; }
+        .product-description { color: #555; line-height: 1.6; margin: 0; }
+        .product-rating-section { display: flex; align-items: center; gap: 10px; }
+        .rating-stars { color: #ffc107; font-size: 18px; }
+        .clickable-stars { cursor: pointer; transition: transform 0.2s; }
+        .clickable-stars:hover { transform: scale(1.1); color: #ffb300; }
+        .rating-value { color: #666; }
+        .product-price { font-size: 32px; font-weight: bold; color: #4285f4; }
+        .product-stock { color: #28a745; font-weight: bold; }
+        .modal-add-cart-btn { background: #4285f4; color: white; border: none; padding: 12px 30px; border-radius: 8px; font-size: 16px; cursor: pointer; transition: background 0.3s; }
+        .modal-add-cart-btn:hover { background: #3367d6; }
+        
+        /* Estilos para las pestañas */
+        .modal-tabs { 
+            display: flex; 
+            gap: 0; 
+            margin-top: 30px; 
+            margin-bottom: 0; 
+            justify-content: center; 
+        }
+        .tab-button { 
+            background: linear-gradient(135deg, #e9ecef, #f8f9fa); 
+            border: 2px solid #dee2e6; 
+            color: #6c757d; 
+            padding: 15px 30px; 
+            border-radius: 12px; 
+            cursor: pointer; 
+            transition: all 0.3s ease; 
+            font-size: 16px; 
+            font-weight: 600; 
+            position: relative;
+            overflow: hidden;
+        }
+        .tab-button::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: -100%;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(90deg, transparent, rgba(255,255,255,0.4), transparent);
+            transition: left 0.5s ease;
+        }
+        .tab-button:hover::before {
+            left: 100%;
+        }
+        .tab-button:hover { 
+            background: linear-gradient(135deg, #dee2e6, #e9ecef); 
+            color: #495057; 
+            border-color: #4285f4;
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(66, 133, 244, 0.2);
+        }
+        .tab-button.active { 
+            background: linear-gradient(135deg, #4285f4, #3367d6); 
+            color: white; 
+            border-color: #4285f4;
+            box-shadow: 0 4px 15px rgba(66, 133, 244, 0.4);
+            transform: translateY(-2px);
+        }
+        .modal-comments-btn { background: #ffc107; color: #333; border: none; padding: 10px 25px; border-radius: 8px; font-size: 14px; cursor: pointer; transition: background 0.3s; }
+        .modal-comments-btn:hover { background: #e0a800; }
+        
+        /* Modal de comentarios */
+        .comments-modal { display: none; position: fixed; z-index: 1001; left: 0; top: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.6); }
+        .comments-modal-content { background: white; margin: 3% auto; padding: 0; border-radius: 12px; width: 90%; max-width: 700px; box-shadow: 0 4px 20px rgba(0,0,0,0.3); max-height: 80vh; overflow-y: auto; }
+        .comments-modal-header { display: flex; justify-content: space-between; align-items: center; padding: 20px; border-bottom: 1px solid #eee; position: sticky; top: 0; background: white; }
+        .comments-modal-header h2 { margin: 0; color: #4285f4; }
+        .comments-modal-close { font-size: 28px; font-weight: bold; cursor: pointer; color: #666; }
+        .comments-modal-close:hover { color: #4285f4; }
+        .comments-modal-body { padding: 20px; }
+        .comment-item { 
+            border: 1px solid #e9ecef; 
+            border-radius: 12px; 
+            padding: 20px; 
+            margin-bottom: 15px; 
+            background: white; 
+            box-shadow: 0 2px 8px rgba(0,0,0,0.08); 
+            transition: all 0.3s ease;
+            position: relative;
+        }
+        .comment-item:hover {
+            box-shadow: 0 4px 16px rgba(0,0,0,0.12);
+            transform: translateY(-2px);
+        }
+        .comment-item::before {
+            content: '';
+            position: absolute;
+            left: 0;
+            top: 0;
+            bottom: 0;
+            width: 4px;
+            background: linear-gradient(180deg, #4285f4, #34a853);
+            border-radius: 12px 0 0 12px;
+        }
+        .comment-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px; }
+        .comment-user { font-weight: bold; color: #333; }
+        .verified-badge { background: #28a745; color: white; padding: 2px 8px; border-radius: 12px; font-size: 12px; margin-left: 8px; }
+        .comment-text { color: #555; line-height: 1.5; margin-bottom: 8px; }
+        .comment-rating { color: #ffc107; }
+        
+        /* Estilos para formulario de comentarios */
+        .add-comment-section { 
+            background: linear-gradient(135deg, #f8f9fa 0%, #e9ecef 100%);
+            padding: 25px; 
+            border-radius: 12px; 
+            margin-bottom: 25px; 
+            border: 2px solid #4285f4;
+            box-shadow: 0 4px 12px rgba(66, 133, 244, 0.1);
+            position: relative;
+        }
+        .add-comment-section::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            height: 4px;
+            background: linear-gradient(90deg, #4285f4, #34a853, #fbbc05, #ea4335);
+            border-radius: 12px 12px 0 0;
+        }
+        .add-comment-section h3 { 
+            margin-top: 0; 
+            margin-bottom: 20px;
+            color: #4285f4; 
+            font-size: 20px;
+            font-weight: 600;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+        .new-comment-rating { 
+            margin: 20px 0; 
+            display: flex;
+            align-items: center;
+            flex-wrap: wrap;
+            gap: 10px;
+        }
+        .star-rating { 
+            font-size: 28px; 
+            margin-left: 10px; 
+            display: flex;
+            gap: 3px;
+        }
+        .star-rating .star { 
+            cursor: not-allowed; 
+            transition: all 0.2s ease; 
+            color: #dee2e6; 
+            background: none; 
+            border: none; 
+            outline: none; 
+            padding: 2px;
+            border-radius: 3px;
+            opacity: 0.6;
+        }
+        .star-rating .star:hover { 
+            color: #dee2e6; 
+            transform: none;
+        }
+        .star-rating .star.active {
+            color: #dee2e6;
+        }
+        #new-comment-text { 
+            width: 100%; 
+            padding: 15px; 
+            border: 2px solid #e9ecef; 
+            border-radius: 8px; 
+            font-family: inherit; 
+            resize: vertical; 
+            font-size: 14px;
+            line-height: 1.5;
+            transition: border-color 0.3s ease;
+            min-height: 100px;
+            background-color: #f8f9fa;
+            color: #6c757d;
+            cursor: not-allowed;
+        }
+        #new-comment-text:disabled {
+            background-color: #f8f9fa;
+            color: #6c757d;
+            border-color: #dee2e6;
+        }
+        #new-comment-text:focus {
+            border-color: #6c757d;
+            outline: none;
+            box-shadow: 0 0 0 3px rgba(108, 117, 125, 0.1);
+        }
+        #submit-comment { 
+            background: linear-gradient(135deg, #6c757d, #5a6268);
+            color: white; 
+            border: none; 
+            padding: 12px 24px; 
+            border-radius: 8px; 
+            cursor: not-allowed; 
+            margin-top: 15px; 
+            font-size: 16px;
+            font-weight: 500;
+            transition: all 0.3s ease;
+            box-shadow: 0 2px 8px rgba(108, 117, 125, 0.3);
+            opacity: 0.7;
+        }
+        #submit-comment:hover { 
+            background: linear-gradient(135deg, #5a6268, #495057);
+            transform: none;
+            box-shadow: 0 2px 8px rgba(108, 117, 125, 0.4);
+        }
+        #submit-comment:active {
+            transform: none;
+        }
+        
+        /* Área de comentarios dentro del modal de producto */
+        .comments-section { 
+            margin-top: 0; 
+            padding: 30px 40px; 
+            border-top: 2px solid #4285f4; 
+            display: none; 
+            background: #fafafa; 
+            border-radius: 0; 
+            margin-bottom: 0; 
+            min-height: 40vh;
+            animation: slideDown 0.3s ease;
+        }
+        .comments-section.show { display: block; }
+        .comments-section h3 { color: #4285f4; margin-bottom: 20px; font-size: 20px; }
+        
+        @keyframes modalSlideIn { from { transform: translateY(-50px); opacity: 0; } to { transform: translateY(0); opacity: 1; } }
+        
+        /* Responsive */
+        @media (max-width: 768px) {
+            .product-modal-body { flex-direction: column; padding: 20px; }
+            .product-modal-left img { max-width: 100%; }
+            .product-modal-header { padding: 15px 20px; }
+            .product-modal-header h2 { font-size: 24px; }
+            .comments-section { padding: 20px; }
+        }
+    </style>
+
+    
+    <!-- Scripts - loading screen primero para mostrar inmediatamente -->
+    <script src="loading-screen.js"></script>
     <script src="main.js"></script>
+    <script src="wishlist.js"></script>
 </body>
 </html>

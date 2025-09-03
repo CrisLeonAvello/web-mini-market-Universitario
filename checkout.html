@@ -1,0 +1,547 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Checkout - StudiMarket</title>
+    <link rel="stylesheet" href="styles.css">
+    <style>
+        .checkout-container {
+            max-width: 700px;
+            margin: 40px auto;
+            background: #fff;
+            border-radius: 16px;
+            box-shadow: 0 4px 16px rgba(0,0,0,0.08);
+            padding: 32px;
+        }
+        .checkout-header {
+            text-align: center;
+            margin-bottom: 32px;
+        }
+        .checkout-summary {
+            margin-bottom: 24px;
+        }
+        .checkout-summary h3 {
+            color: #4285f4;
+            margin-bottom: 12px;
+        }
+        .checkout-products {
+            margin-bottom: 24px;
+        }
+        .checkout-product {
+            display: flex;
+            align-items: center;
+            margin-bottom: 12px;
+            padding-bottom: 12px;
+            border-bottom: 1px solid #eee;
+        }
+        .checkout-product img {
+            width: 60px;
+            border-radius: 8px;
+            margin-right: 16px;
+        }
+        .checkout-product-info {
+            flex: 1;
+        }
+        .checkout-product-title {
+            font-weight: bold;
+            color: #333;
+        }
+        .checkout-product-qty {
+            color: #666;
+            font-size: 14px;
+        }
+        .checkout-product-price {
+            color: #4285f4;
+            font-weight: bold;
+        }
+        .checkout-total {
+            font-size: 22px;
+            font-weight: bold;
+            color: #007bff;
+            text-align: right;
+            margin-top: 16px;
+        }
+        .checkout-form {
+            margin-top: 32px;
+        }
+        .checkout-form label {
+            display: block;
+            margin-bottom: 6px;
+            color: #333;
+        }
+        .checkout-form input, .checkout-form select {
+            width: 100%;
+            padding: 10px;
+            margin-bottom: 18px;
+            border-radius: 8px;
+            border: 1px solid #ccc;
+            transition: all 0.3s ease;
+        }
+        .checkout-btn {
+            width: 100%;
+            padding: 14px;
+            background: #007bff;
+            color: #fff;
+            border: none;
+            border-radius: 10px;
+            font-size: 18px;
+            cursor: pointer;
+            margin-top: 12px;
+        }
+        .checkout-btn:hover {
+            background: #0056b3;
+        }
+        
+        /* Estilos para opciones de envío */
+        .shipping-section {
+            margin-bottom: 20px;
+        }
+        
+        .shipping-options {
+            display: flex;
+            flex-direction: column;
+            gap: 12px;
+            margin-top: 8px;
+        }
+        
+        .shipping-option {
+            border: 2px solid #e0e0e0;
+            border-radius: 8px;
+            padding: 16px;
+            cursor: pointer;
+            transition: all 0.2s;
+            background: #fff;
+        }
+        
+        .shipping-option:hover {
+            border-color: #007bff;
+            background: #f8f9ff;
+        }
+        
+        .shipping-option.selected {
+            border-color: #007bff;
+            background: #f0f7ff;
+            box-shadow: 0 2px 8px rgba(0, 123, 255, 0.2);
+        }
+        
+        .shipping-option-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 8px;
+        }
+        
+        .shipping-option-title {
+            font-weight: 600;
+            color: #333;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+        
+        .shipping-option-cost {
+            font-weight: bold;
+            color: #007bff;
+        }
+        
+        .shipping-option-cost.free {
+            color: #28a745;
+        }
+        
+        .shipping-option-description {
+            color: #666;
+            font-size: 0.9rem;
+            margin-bottom: 6px;
+        }
+        
+        .shipping-option-time {
+            color: #888;
+            font-size: 0.85rem;
+            font-style: italic;
+        }
+    </style>
+</head>
+<body>
+    <div class="checkout-container">
+        <div class="checkout-header">
+            <h1>Finalizar Compra</h1>
+            <p>Revisa tu pedido y completa tus datos para pagar</p>
+        </div>
+        <div class="checkout-summary">
+            <h3>Resumen de tu carrito</h3>
+            <div class="checkout-products" id="checkout-products">
+                <!-- Los productos se insertan aquí con JS -->
+            </div>
+            <div class="checkout-total" id="checkout-total">
+                <!-- Total se inserta aquí -->
+            </div>
+        </div>
+        <form class="checkout-form" id="checkout-form">
+            <label for="name">Nombre completo</label>
+            <input type="text" id="name" name="name" required>
+            <label for="email">Correo electrónico</label>
+            <input type="email" id="email" name="email" required>
+            <label for="address">Dirección de entrega</label>
+            <input type="text" id="address" name="address" required>
+            
+            <div class="shipping-section">
+                <label>Opciones de envío</label>
+                <div class="shipping-options" id="shipping-options">
+                    <!-- Las opciones de envío se cargarán dinámicamente -->
+                </div>
+            </div>
+            
+            <label for="payment">Método de pago</label>
+            <select id="payment" name="payment" required>
+                <option value="">Selecciona...</option>
+                <option value="tarjeta">Tarjeta de crédito/débito</option>
+                <option value="transferencia">Transferencia bancaria</option>
+                <option value="efectivo">Pago en efectivo</option>
+            </select>
+            <button type="submit" class="checkout-btn">Confirmar y Pagar</button>
+        </form>
+    </div>
+    <script>
+        // Obtener productos del carrito desde localStorage
+        function getCart() {
+            const cart = JSON.parse(localStorage.getItem('cart') || '[]');
+            console.log('Raw cart from localStorage:', cart);
+            
+            // Filtrar items válidos
+            const validCart = cart.filter(item => {
+                const isValid = item && 
+                              typeof item.id === 'string' && 
+                              typeof item.quantity === 'number' &&
+                              item.quantity > 0 &&
+                              !item.titulo; // No debe tener propiedades de producto completo
+                
+                if (!isValid) {
+                    console.warn('Item inválido en carrito:', item);
+                }
+                return isValid;
+            });
+            
+            console.log('Valid cart items:', validCart);
+            
+            // Si el carrito se filtró, actualizar localStorage
+            if (validCart.length !== cart.length) {
+                console.log('Actualizando localStorage con carrito limpio');
+                localStorage.setItem('cart', JSON.stringify(validCart));
+            }
+            
+            return validCart;
+        }
+        // Obtener productos globales
+        async function getProducts() {
+            const res = await fetch('products.json');
+            return await res.json();
+        }
+        
+        // Variables globales para envío
+        let shippingOptions = [];
+        let selectedShipping = null;
+        
+        // Obtener opciones de envío
+        async function getShippingOptions() {
+            try {
+                const res = await fetch('envios.json');
+                return await res.json();
+            } catch (error) {
+                console.error('Error cargando opciones de envío:', error);
+                return [];
+            }
+        }
+        
+        // Renderizar opciones de envío
+        async function renderShippingOptions() {
+            console.log('🚚 Cargando opciones de envío...');
+            
+            const container = document.getElementById('shipping-options');
+            if (!container) {
+                console.error('Container de opciones de envío no encontrado');
+                return;
+            }
+            
+            try {
+                shippingOptions = await getShippingOptions();
+                console.log('Opciones de envío cargadas:', shippingOptions);
+                
+                if (shippingOptions.length === 0) {
+                    container.innerHTML = '<p>No hay opciones de envío disponibles</p>';
+                    return;
+                }
+                
+                container.innerHTML = shippingOptions.map((option, index) => `
+                    <div class="shipping-option" data-shipping-id="${index}" onclick="selectShipping(${index})">
+                        <div class="shipping-option-header">
+                            <div class="shipping-option-title">
+                                <span>${option.icon}</span>
+                                <span>${option.tipo}</span>
+                            </div>
+                            <div class="shipping-option-cost ${option.costo === 0 ? 'free' : ''}">
+                                ${option.costo === 0 ? 'GRATIS' : '$' + option.costo.toLocaleString()}
+                            </div>
+                        </div>
+                        <div class="shipping-option-description">${option.descripcion}</div>
+                        <div class="shipping-option-time">⏱️ ${option.tiempo_entrega}</div>
+                    </div>
+                `).join('');
+                
+                // Seleccionar la primera opción por defecto
+                if (shippingOptions.length > 0) {
+                    selectShipping(0);
+                }
+                
+            } catch (error) {
+                console.error('Error renderizando opciones de envío:', error);
+                container.innerHTML = '<p style="color: red;">Error cargando opciones de envío</p>';
+            }
+        }
+        
+        // Seleccionar opción de envío
+        function selectShipping(index) {
+            console.log('📦 Seleccionando opción de envío:', index);
+            
+            // Remover selección anterior
+            document.querySelectorAll('.shipping-option').forEach(opt => {
+                opt.classList.remove('selected');
+            });
+            
+            // Seleccionar nueva opción
+            const optionElement = document.querySelector(`[data-shipping-id="${index}"]`);
+            if (optionElement) {
+                optionElement.classList.add('selected');
+                selectedShipping = shippingOptions[index];
+                
+                console.log('Opción seleccionada:', selectedShipping);
+                
+                // Actualizar totales del checkout
+                updateCheckoutTotals();
+                
+                // Mostrar/ocultar campo de dirección según el tipo de envío
+                const addressField = document.getElementById('address');
+                if (selectedShipping.tipo === 'Retiro en tienda') {
+                    addressField.required = false;
+                    addressField.style.display = 'none';
+                    addressField.previousElementSibling.style.display = 'none'; // Label
+                } else {
+                    addressField.required = true;
+                    addressField.style.display = 'block';
+                    addressField.previousElementSibling.style.display = 'block'; // Label
+                }
+            }
+        }
+        
+        // Actualizar totales incluyendo costo de envío
+        function updateCheckoutTotals() {
+            const totalDiv = document.getElementById('checkout-total');
+            if (!totalDiv || !selectedShipping) return;
+            
+            // Recalcular totales con envío
+            const cart = getCart();
+            if (cart.length === 0) return;
+            
+            getProducts().then(products => {
+                let subtotal = 0;
+                
+                cart.forEach(item => {
+                    const product = products.find(p => p.id === item.id);
+                    if (product) {
+                        subtotal += product.precio * item.quantity;
+                    }
+                });
+                
+                const shippingCost = selectedShipping.costo;
+                const subtotalWithShipping = subtotal + shippingCost;
+                const iva = subtotalWithShipping * 0.19;
+                const total = subtotalWithShipping + iva;
+                
+                totalDiv.innerHTML = `
+                    <div style="border-top: 2px solid #eee; padding-top: 16px; margin-top: 16px;">
+                        <div style="display: flex; justify-content: space-between; margin-bottom: 8px;">
+                            <span>Subtotal productos:</span>
+                            <span>$${subtotal.toLocaleString()}</span>
+                        </div>
+                        <div style="display: flex; justify-content: space-between; margin-bottom: 8px;">
+                            <span>Envío (${selectedShipping.tipo}):</span>
+                            <span class="${shippingCost === 0 ? 'free' : ''}">${shippingCost === 0 ? 'GRATIS' : '$' + shippingCost.toLocaleString()}</span>
+                        </div>
+                        <div style="display: flex; justify-content: space-between; margin-bottom: 8px; padding-top: 8px; border-top: 1px solid #eee;">
+                            <span>Subtotal con envío:</span>
+                            <span>$${subtotalWithShipping.toLocaleString()}</span>
+                        </div>
+                        <div style="display: flex; justify-content: space-between; margin-bottom: 8px;">
+                            <span>IVA (19%):</span>
+                            <span>$${iva.toLocaleString()}</span>
+                        </div>
+                        <div style="display: flex; justify-content: space-between; font-size: 22px; font-weight: bold; color: #007bff;">
+                            <span>Total final:</span>
+                            <span>$${total.toLocaleString()}</span>
+                        </div>
+                    </div>
+                `;
+                
+                console.log('💰 Totales actualizados con envío:', {
+                    subtotal,
+                    envio: shippingCost,
+                    iva,
+                    total
+                });
+            });
+        }
+        
+        // Renderizar productos en el checkout
+        async function renderCheckoutProducts() {
+            console.log('=== INICIANDO CHECKOUT ===');
+            
+            const cart = getCart();
+            const container = document.getElementById('checkout-products');
+            const totalDiv = document.getElementById('checkout-total');
+            
+            console.log('Carrito para checkout:', cart);
+            console.log('Container encontrado:', container);
+            console.log('TotalDiv encontrado:', totalDiv);
+            
+            if (!container || !totalDiv) {
+                console.error('❌ No se encontraron elementos DOM necesarios');
+                return;
+            }
+            
+            if (cart.length === 0) {
+                console.warn('⚠️ Carrito vacío');
+                container.innerHTML = '<p style="text-align: center; color: #666;">No hay productos en el carrito</p>';
+                totalDiv.innerHTML = '<div style="text-align: center;">Total a pagar: $0</div>';
+                return;
+            }
+            
+            try {
+                console.log('🔍 Obteniendo productos...');
+                const products = await getProducts();
+                console.log('✅ Productos obtenidos:', products.length);
+                
+                let total = 0;
+                let subtotal = 0;
+                let iva = 0;
+                container.innerHTML = '';
+                
+                console.log('🛒 Procesando items del carrito...');
+                cart.forEach((item, index) => {
+                    console.log(`Item ${index + 1}:`, item);
+                    const product = products.find(p => p.id === item.id);
+                    if (product) {
+                        console.log(`✅ Producto encontrado: ${product.titulo}`);
+                        const itemSubtotal = product.precio * item.quantity;
+                        subtotal += itemSubtotal;
+                        container.innerHTML += `
+                            <div class="checkout-product">
+                                <img src="${product.imagenes[0]}" alt="${product.titulo}">
+                                <div class="checkout-product-info">
+                                    <div class="checkout-product-title">${product.titulo}</div>
+                                    <div class="checkout-product-qty">Cantidad: ${item.quantity}</div>
+                                </div>
+                                <div class="checkout-product-price">$${itemSubtotal.toLocaleString()}</div>
+                            </div>
+                        `;
+                    } else {
+                        console.error(`❌ Producto no encontrado para ID: ${item.id}`);
+                    }
+                });
+                
+                iva = subtotal * 0.19; // IVA del 19%
+                total = subtotal + iva;
+                
+                console.log('💰 Cálculos finales:');
+                console.log('Subtotal:', subtotal);
+                console.log('IVA:', iva);
+                console.log('Total:', total);
+                
+                totalDiv.innerHTML = `
+                    <div style="border-top: 2px solid #eee; padding-top: 16px; margin-top: 16px;">
+                        <div style="display: flex; justify-content: space-between; margin-bottom: 8px;">
+                            <span>Subtotal:</span>
+                            <span>$${subtotal.toLocaleString()}</span>
+                        </div>
+                        <div style="display: flex; justify-content: space-between; margin-bottom: 8px;">
+                            <span>IVA (19%):</span>
+                            <span>$${iva.toLocaleString()}</span>
+                        </div>
+                        <div style="display: flex; justify-content: space-between; font-size: 22px; font-weight: bold; color: #007bff;">
+                            <span>Total a pagar:</span>
+                            <span>$${total.toLocaleString()}</span>
+                        </div>
+                    </div>
+                `;
+                
+                console.log('✅ Checkout renderizado exitosamente');
+            } catch (error) {
+                console.error('❌ Error cargando productos:', error);
+                container.innerHTML = '<p style="color: red;">Error cargando productos. Revisa la consola para más detalles.</p>';
+                totalDiv.innerHTML = '<div style="color: red;">Error calculando total</div>';
+            }
+        }
+        // Enviar formulario
+        document.getElementById('checkout-form').addEventListener('submit', function(e) {
+            e.preventDefault();
+            
+            // Validar que se haya seleccionado una opción de envío
+            if (!selectedShipping) {
+                alert('⚠️ Por favor selecciona una opción de envío');
+                return;
+            }
+            
+            // Obtener datos del formulario
+            const formData = new FormData(this);
+            const orderData = {
+                customer: {
+                    name: formData.get('name'),
+                    email: formData.get('email'),
+                    address: formData.get('address'),
+                    payment: formData.get('payment')
+                },
+                shipping: selectedShipping,
+                cart: getCart(),
+                timestamp: new Date().toISOString()
+            };
+            
+            console.log('📋 Datos del pedido:', orderData);
+            
+            // Simular procesamiento
+            const submitBtn = this.querySelector('button[type="submit"]');
+            const originalText = submitBtn.textContent;
+            submitBtn.textContent = 'Procesando...';
+            submitBtn.disabled = true;
+            
+            setTimeout(() => {
+                alert(`✅ ¡Pago realizado con éxito! 
+                
+📦 Método de envío: ${selectedShipping.tipo}
+💰 Costo de envío: ${selectedShipping.costo === 0 ? 'GRATIS' : '$' + selectedShipping.costo.toLocaleString()}
+⏱️ Tiempo estimado: ${selectedShipping.tiempo_entrega}
+
+¡Gracias por tu compra!`);
+                
+                localStorage.removeItem('cart');
+                window.location.href = 'index.html';
+            }, 2000);
+        });
+        // Inicializar cuando el DOM esté listo
+        document.addEventListener('DOMContentLoaded', function() {
+            console.log('DOM cargado, iniciando checkout...');
+            renderCheckoutProducts();
+            renderShippingOptions();
+        });
+        
+        // También llamar directamente por si acaso
+        if (document.readyState === 'loading') {
+            document.addEventListener('DOMContentLoaded', function() {
+                renderCheckoutProducts();
+                renderShippingOptions();
+            });
+        } else {
+            renderCheckoutProducts();
+            renderShippingOptions();
+        }
+    </script>
+</body>
+</html>
