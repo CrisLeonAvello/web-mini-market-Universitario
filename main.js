@@ -496,7 +496,6 @@ function addToCart(productId) {
     
     // Guardar carrito en localStorage
     localStorage.setItem('cart', JSON.stringify(cart));
-    
     updateCartDisplay();
     
     // Buscar el botón que activó esta función y mostrar feedback
@@ -610,10 +609,10 @@ function updateCartDisplay() {
     
     payBtn.style.display = 'block';
 
-        // Evento para el botón de pago (checkout)
-        payBtn.onclick = function() {
-            window.location.href = 'checkout.html';
-        };
+    // Evento para el botón de pago (checkout)
+    payBtn.onclick = function() {
+        window.location.href = 'checkout.html';
+    };
 }
 
 function updateCartQuantity(productId, change) {
@@ -1031,7 +1030,6 @@ window.addEventListener('DOMContentLoaded', function() {
     setTimeout(() => {
         updateCartDisplay();
     }, 100);
-    
     // Agregar event listeners básicos
     const searchInput = document.querySelector('.search-input');
     const filterSelect = document.querySelector('.filter-select');
