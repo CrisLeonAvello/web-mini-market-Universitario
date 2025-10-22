@@ -1,0 +1,5 @@
+[
+  {"codigo": "BIENVENIDA10", "tipo": "porcentaje", "valor": 10, "descripcion": "10% de descuento para nuevos usuarios", "minimo_compra": 10000},
+  {"codigo": "ENVIOFREE", "tipo": "envio_gratis", "valor": 0, "descripcion": "Envío gratis en tu compra", "minimo_compra": 30000},
+  {"codigo": "ESTUDIANTE15", "tipo": "porcentaje", "valor": 15, "descripcion": "15% descuento estudiantes universitarios", "minimo_compra": 20000}
+]

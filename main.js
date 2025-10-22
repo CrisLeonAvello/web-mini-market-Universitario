@@ -126,7 +126,6 @@ function initializePriceFilters() {
     const minPriceInput = document.getElementById('min-price');
     const maxPriceInput = document.getElementById('max-price');
     const applyPriceBtn = document.getElementById('apply-price-filter');
-    const clearPriceBtn = document.getElementById('clear-price-filter');
     
     if (!minPriceInput || !maxPriceInput) return;
     
@@ -190,10 +189,6 @@ function initializePriceFilters() {
         applyPriceBtn.addEventListener('click', validateAndApplyPriceFilter);
     }
     
-    if (clearPriceBtn) {
-        clearPriceBtn.addEventListener('click', clearPriceFilter);
-    }
-    
     // También aplicar filtro al presionar Enter en los campos
     minPriceInput.addEventListener('keypress', function(e) {
         if (e.key === 'Enter') {
@@ -247,7 +242,6 @@ function initializePriceFilters() {
 // Inicializar filtros de rating
 function initializeRatingFilter() {
     const ratingStars = document.querySelectorAll('#rating-filter .star');
-    const clearRatingBtn = document.getElementById('clear-rating');
     
     ratingStars.forEach((star, index) => {
         star.addEventListener('click', function() {
@@ -287,17 +281,6 @@ function initializeRatingFilter() {
             });
         });
     });
-    
-    if (clearRatingBtn) {
-        clearRatingBtn.addEventListener('click', function() {
-            currentFilters.minRating = 0;
-            ratingStars.forEach(s => {
-                s.classList.remove('active');
-                s.style.color = '#ddd';
-            });
-            filterProducts();
-        });
-    }
 }
 
 // Cargar productos desde JSON
@@ -526,6 +509,8 @@ function updateCartDisplay() {
     const container = document.getElementById('cart-items-container');
     const summary = document.getElementById('cart-summary');
     const payBtn = document.getElementById('pay-btn');
+    const cartActions = document.getElementById('cart-actions');
+    const emptyCartBtn = document.getElementById('empty-cart-btn');
     const cartCounter = document.getElementById('cart-counter');
     const cartBtn = document.querySelector('.open-cart-btn');
     
@@ -533,9 +518,13 @@ function updateCartDisplay() {
         container: !!container,
         summary: !!summary,
         payBtn: !!payBtn,
+        cartActions: !!cartActions,
+        emptyCartBtn: !!emptyCartBtn,
         cartCounter: !!cartCounter,
         cartBtn: !!cartBtn
     });
+    
+
     
     // Calcular total de productos en el carrito
     const totalItems = cart.reduce((sum, item) => sum + item.quantity, 0);
@@ -558,6 +547,7 @@ function updateCartDisplay() {
         container.innerHTML = '';
         summary.innerHTML = '<p>Carrito vacío</p>';
         payBtn.style.display = 'none';
+        if (cartActions) cartActions.style.display = 'none';
         return;
     }
     
@@ -608,6 +598,7 @@ function updateCartDisplay() {
     `;
     
     payBtn.style.display = 'block';
+    if (cartActions) cartActions.style.display = 'flex';
 
     // Evento para el botón de pago (checkout)
     payBtn.onclick = function() {
@@ -633,6 +624,8 @@ function removeFromCart(productId) {
     localStorage.setItem('cart', JSON.stringify(cart));
     updateCartDisplay();
 }
+
+// Función de vaciar carrito removida - se usa solo eliminación individual
 
 // Funciones para modal de producto
 function showProductModal(productId) {
@@ -1030,6 +1023,12 @@ window.addEventListener('DOMContentLoaded', function() {
     setTimeout(() => {
         updateCartDisplay();
     }, 100);
+    
+    // Event listener para el botón global de limpiar filtros
+    const resetFiltersBtn = document.getElementById('reset-filters');
+    if (resetFiltersBtn) {
+        resetFiltersBtn.addEventListener('click', resetAllFilters);
+    }
     // Agregar event listeners básicos
     const searchInput = document.querySelector('.search-input');
     const filterSelect = document.querySelector('.filter-select');
@@ -1056,6 +1055,8 @@ window.addEventListener('DOMContentLoaded', function() {
     
     // Inicializar modales
     initializeModals();
+    
+    // Botón vaciar carrito ahora usa onclick directamente en HTML
     
     console.log('Initialization complete');
 });
@@ -1560,16 +1561,7 @@ window.debugCartForCheckout = function() {
     return cart;
 };
 
-// Interceptar clicks al botón de checkout para debugging
-document.addEventListener('DOMContentLoaded', function() {
-    const checkoutBtn = document.querySelector('.checkout-btn');
-    if (checkoutBtn) {
-        checkoutBtn.addEventListener('click', function(e) {
-            console.log('🛒 Clic en checkout - verificando carrito...');
-            debugCartForCheckout();
-        });
-    }
-});
+// Función de debugging integrada en la inicialización principal
 
 // Función para testear el checkout
 window.testCheckout = function() {

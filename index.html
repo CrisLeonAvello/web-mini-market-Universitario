@@ -75,17 +75,17 @@
             <aside class="filters">
                 <div class="filters-header">
                     <h3>Filtros</h3>
-                    <button id="reset-filters" class="reset-filters-btn" onclick="resetAllFilters()">🔄 Limpiar</button>
                 </div>
                 <div class="filter-group">
                     <h4>Categoría</h4>
-                    <select class="filter-select">
-                        <option>Seleccionar categoría</option>
-                        <option>Cursos</option>
-                        <option>Libros</option>
-                        <option>Útiles Escolares</option>
-                        <option>Tecnología</option>
-                        <option>Accesorios</option>
+                    <select class="filter-select" id="category-filter">
+                        <option value="">Seleccionar categoría</option>
+                        <option value="Electrónica">Electrónica</option>
+                        <option value="Libros">Libros</option>
+                        <option value="Moda">Moda</option>
+                        <option value="Juguetes">Juguetes</option>
+                        <option value="Hogar">Hogar</option>
+                        <option value="Deportes">Deportes</option>
                     </select>
                 </div>
                 <div class="filter-group">
@@ -103,7 +103,6 @@
                         </div>
                         <div class="price-actions">
                             <button id="apply-price-filter" class="apply-filter-btn">Aplicar filtro</button>
-                            <button id="clear-price-filter" class="clear-filter-btn">Limpiar</button>
                         </div>
                     </div>
                 </div>
@@ -116,9 +115,9 @@
                         <div class="star" data-rating="4">★</div>
                         <div class="star" data-rating="5">★</div>
                     </div>
-                    <div class="rating-clear">
-                        <button id="clear-rating" class="clear-btn">Limpiar filtro</button>
-                    </div>
+                </div>
+                <div class="global-filter-actions">
+                    <button id="reset-filters" class="reset-filters-btn-global">Limpiar Filtros</button>
                 </div>
             </aside>
             <section class="products-grid" id="products-grid">
@@ -142,6 +141,9 @@
             </div>
             <div class="cart-summary" id="cart-summary">
                 <p>Carrito vacío</p>
+            </div>
+            <!-- Botón vaciar carrito removido por problemas de compatibilidad -->
+            <div class="cart-actions" id="cart-actions" style="display: none;">
             </div>
             <button class="pay-btn" id="pay-btn" style="display: none;">💳 PROCEDE AL PAGO</button>
         </div>
@@ -239,6 +241,30 @@
         .cart-summary .total { font-size: 20px; font-weight: bold; color: #000; }
         .pay-btn { display: block; width: 100%; margin-top: 20px; padding: 14px; font-size: 16px; background: #007bff; color: #fff; border: none; border-radius: 10px; cursor: pointer; }
         .pay-btn:hover { background: #0056b3; }
+        
+        /* Estilos para acciones del carrito */
+        .cart-actions { 
+            margin: 15px 0; 
+            display: flex; 
+            justify-content: center; 
+        }
+        
+        .empty-cart-btn { 
+            background: #dc3545; 
+            color: white; 
+            border: none; 
+            padding: 10px 20px; 
+            border-radius: 8px; 
+            cursor: pointer; 
+            font-size: 14px; 
+            font-weight: 600;
+            transition: all 0.3s ease;
+        }
+        
+        .empty-cart-btn:hover { 
+            background: #c82333; 
+            transform: translateY(-1px);
+        }
         
         /* Nuevos estilos para modal de producto */
         .product-modal { display: none; position: fixed; z-index: 1000; left: 0; top: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.6); overflow-y: auto; }

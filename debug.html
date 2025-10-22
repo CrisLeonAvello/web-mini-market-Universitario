@@ -1,0 +1,178 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Debug - Mini Marketplace</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 20px;
+            background: #f8f9fa;
+        }
+        .debug-panel {
+            background: white;
+            padding: 20px;
+            border-radius: 8px;
+            margin-bottom: 20px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        }
+        h2 {
+            color: #333;
+            border-bottom: 2px solid #007bff;
+            padding-bottom: 8px;
+        }
+        .button-test {
+            background: #dc3545;
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 6px;
+            cursor: pointer;
+            margin: 5px;
+            font-size: 16px;
+        }
+        .button-test:hover {
+            background: #c82333;
+        }
+        .info {
+            background: #e3f2fd;
+            padding: 15px;
+            border-left: 4px solid #2196f3;
+            margin: 10px 0;
+        }
+        .error {
+            background: #ffebee;
+            padding: 15px;
+            border-left: 4px solid #f44336;
+            margin: 10px 0;
+        }
+        .success {
+            background: #e8f5e8;
+            padding: 15px;
+            border-left: 4px solid #4caf50;
+            margin: 10px 0;
+        }
+        pre {
+            background: #f5f5f5;
+            padding: 10px;
+            border-radius: 4px;
+            overflow-x: auto;
+            white-space: pre-wrap;
+        }
+    </style>
+</head>
+<body>
+    <h1>🔧 Debug Panel - Mini Marketplace</h1>
+    
+    <div class="debug-panel">
+        <h2>📊 Estado del Carrito</h2>
+        <div id="cart-status"></div>
+        <button class="button-test" onclick="debugCart()">🔍 Verificar Carrito</button>
+        <button class="button-test" onclick="clearCart()">🗑️ Limpiar Carrito</button>
+        <button class="button-test" onclick="addTestProducts()">➕ Agregar Productos de Prueba</button>
+    </div>
+
+    <div class="debug-panel">
+        <h2>🎯 Test del Botón Vaciar</h2>
+        <div id="button-test-status"></div>
+        <button class="button-test" id="test-empty-btn" onclick="testEmptyButton()">🧪 Test Botón Vaciar</button>
+    </div>
+
+    <div class="debug-panel">
+        <h2>🌐 Navegación</h2>
+        <button class="button-test" onclick="location.href='index.html'">🏠 Ir a Index</button>
+        <button class="button-test" onclick="location.href='checkout.html'">💳 Ir a Checkout</button>
+    </div>
+
+    <div class="debug-panel">
+        <h2>📋 Log de Depuración</h2>
+        <div id="debug-log"></div>
+    </div>
+
+    <script>
+        let debugLog = document.getElementById('debug-log');
+        
+        function log(message, type = 'info') {
+            const timestamp = new Date().toLocaleTimeString();
+            const logClass = type === 'error' ? 'error' : type === 'success' ? 'success' : 'info';
+            debugLog.innerHTML += `<div class="${logClass}">[${timestamp}] ${message}</div>`;
+        }
+
+        function debugCart() {
+            log('🔍 Iniciando debug del carrito...', 'info');
+            
+            const cart = JSON.parse(localStorage.getItem('cart') || '[]');
+            const cartStatus = document.getElementById('cart-status');
+            
+            log(`📊 Items en carrito: ${cart.length}`, 'info');
+            
+            if (cart.length === 0) {
+                cartStatus.innerHTML = '<div class="error">❌ Carrito vacío</div>';
+                log('❌ El carrito está vacío', 'error');
+            } else {
+                let html = '<div class="success">✅ Carrito con productos:</div><pre>';
+                cart.forEach((item, index) => {
+                    html += `${index + 1}. ID: ${item.id}, Cantidad: ${item.quantity}\\n`;
+                    log(`📦 Producto ${index + 1}: ID=${item.id}, Cantidad=${item.quantity}`, 'success');
+                });
+                html += '</pre>';
+                cartStatus.innerHTML = html;
+            }
+            
+            // Verificar elementos del DOM
+            const emptyBtn = document.getElementById('empty-cart-btn');
+            const cartActions = document.getElementById('cart-actions');
+            
+            if (!emptyBtn) {
+                log('❌ Botón empty-cart-btn no encontrado en el DOM', 'error');
+            } else {
+                log('✅ Botón empty-cart-btn encontrado', 'success');
+            }
+            
+            if (!cartActions) {
+                log('❌ Div cart-actions no encontrado en el DOM', 'error');
+            } else {
+                const display = getComputedStyle(cartActions).display;
+                log(`📋 cart-actions display: ${display}`, display === 'none' ? 'error' : 'success');
+            }
+        }
+
+        function clearCart() {
+            localStorage.removeItem('cart');
+            log('🗑️ Carrito limpiado desde localStorage', 'success');
+            debugCart();
+        }
+
+        function addTestProducts() {
+            const testCart = [
+                {id: 'SKU-1001', quantity: 1},
+                {id: 'SKU-1002', quantity: 1},
+                {id: 'SKU-1004', quantity: 1}
+            ];
+            localStorage.setItem('cart', JSON.stringify(testCart));
+            log('➕ Productos de prueba agregados al carrito', 'success');
+            debugCart();
+        }
+
+        function testEmptyButton() {
+            const buttonStatus = document.getElementById('button-test-status');
+            
+            if (confirm('¿Quieres probar el vaciado del carrito?')) {
+                clearCart();
+                buttonStatus.innerHTML = '<div class="success">✅ Función de vaciado ejecutada correctamente</div>';
+                log('🧪 Test del botón vaciar: EXITOSO', 'success');
+            } else {
+                buttonStatus.innerHTML = '<div class="info">ℹ️ Test cancelado por el usuario</div>';
+                log('🧪 Test del botón vaciar: CANCELADO', 'info');
+            }
+        }
+
+        // Ejecutar debug inicial al cargar
+        window.onload = function() {
+            log('🚀 Panel de debug cargado', 'success');
+            debugCart();
+        };
+    </script>
+</body>
+</html>

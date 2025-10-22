@@ -160,6 +160,18 @@
             font-size: 0.85rem;
             font-style: italic;
         }
+        
+        /* Animación para notificaciones */
+        @keyframes slideIn {
+            from {
+                transform: translateX(100%);
+                opacity: 0;
+            }
+            to {
+                transform: translateX(0);
+                opacity: 1;
+            }
+        }
     </style>
 </head>
 <body>
@@ -189,6 +201,30 @@
                 <label>Opciones de envío</label>
                 <div class="shipping-options" id="shipping-options">
                     <!-- Las opciones de envío se cargarán dinámicamente -->
+                </div>
+            </div>
+            
+            <div class="coupon-section" style="margin-bottom: 20px; border: 2px solid #f0f0f0; border-radius: 8px; padding: 16px; background: #fafafa;">
+                <label for="coupon-code">¿Tienes un cupón de descuento?</label>
+                <div style="display: flex; gap: 8px; margin-top: 8px;">
+                    <input type="text" id="coupon-code" placeholder="Ingresa código del cupón" style="flex: 1;">
+                    <button type="button" id="apply-coupon" style="background: #28a745; color: white; border: none; padding: 10px 16px; border-radius: 6px; cursor: pointer;">Aplicar</button>
+                </div>
+                <div id="coupon-message" style="margin-top: 8px; font-size: 14px;"></div>
+                <div style="margin-top: 12px; color: #666; font-size: 12px;">
+                    <strong>Cupones disponibles:</strong><br>
+                    • BIENVENIDA10 - 10% descuento (mín. $10.000)<br>
+                    • ENVIOFREE - Envío gratis (mín. $30.000)<br>
+                    • ESTUDIANTE15 - 15% descuento estudiantes (mín. $20.000)
+                </div>
+            </div>
+            
+            <div class="pricing-summary" id="pricing-summary" style="margin-bottom: 24px; padding: 20px; border: 2px solid #007bff; border-radius: 12px; background: linear-gradient(135deg, #f8f9ff, #e3f2fd);">
+                <h3 style="margin: 0 0 16px 0; color: #007bff; text-align: center; font-size: 20px;">💰 Resumen de Precios</h3>
+                <div id="pricing-details" style="font-size: 16px;">
+                    <div style="text-align: center; color: #666; padding: 20px;">
+                        <p>📊 Selecciona una opción de envío para ver el resumen</p>
+                    </div>
                 </div>
             </div>
             
@@ -238,10 +274,184 @@
             return await res.json();
         }
         
-        // Variables globales para envío
+        // Variables globales para envío y cupones
         let shippingOptions = [];
         let selectedShipping = null;
+        let appliedCoupon = null;
         
+        // Obtener cupones disponibles
+        async function getCoupons() {
+            try {
+                const res = await fetch('promos.json');
+                return await res.json();
+            } catch (error) {
+                console.error('Error cargando cupones:', error);
+                return [];
+            }
+        }
+        
+        // Función simple para mostrar notificaciones
+        function showCheckoutNotification(message, type = 'success') {
+            const notification = document.createElement('div');
+            notification.style.cssText = `
+                position: fixed;
+                top: 20px;
+                right: 20px;
+                background: ${type === 'success' ? '#28a745' : '#dc3545'};
+                color: white;
+                padding: 12px 20px;
+                border-radius: 8px;
+                box-shadow: 0 4px 12px rgba(0,0,0,0.2);
+                z-index: 10000;
+                font-weight: 600;
+                animation: slideIn 0.3s ease;
+            `;
+            
+            notification.textContent = message;
+            document.body.appendChild(notification);
+            
+            setTimeout(() => {
+                notification.remove();
+            }, 3000);
+        }
+        
+        // Función para actualizar el resumen de precios visible
+        function updatePricingSummary() {
+            const pricingDetails = document.getElementById('pricing-details');
+            
+            if (!pricingDetails || !selectedShipping) return;
+            
+            // Obtener productos y calcular
+            const cart = getCart();
+            if (cart.length === 0) {
+                pricingDetails.innerHTML = `
+                    <div style="text-align: center; color: #666;">
+                        <p>Carrito vacío</p>
+                    </div>
+                `;
+                return;
+            }
+            
+            getProducts().then(products => {
+                let subtotal = 0;
+                
+                cart.forEach(item => {
+                    const product = products.find(p => p.id === item.id);
+                    if (product) {
+                        subtotal += product.precio * item.quantity;
+                    }
+                });
+                
+                // Calcular total con descuentos y envío
+                let shippingCost = selectedShipping.costo;
+                let discount = 0;
+                let discountInfo = '';
+                
+                if (appliedCoupon) {
+                    if (appliedCoupon.tipo === 'porcentaje') {
+                        discount = subtotal * (appliedCoupon.valor / 100);
+                        discountInfo = `
+                            <div style="display: flex; justify-content: space-between; margin-bottom: 8px; color: #28a745;">
+                                <span>Descuento ${appliedCoupon.codigo} (-${appliedCoupon.valor}%):</span>
+                                <span>-$${discount.toLocaleString()}</span>
+                            </div>`;
+                    } else if (appliedCoupon.tipo === 'envio_gratis') {
+                        shippingCost = 0;
+                        discountInfo = `
+                            <div style="display: flex; justify-content: space-between; margin-bottom: 8px; color: #28a745;">
+                                <span>Descuento ${appliedCoupon.codigo} (Envío gratis):</span>
+                                <span>-$${selectedShipping.costo.toLocaleString()}</span>
+                            </div>`;
+                    }
+                }
+                
+                const subtotalAfterDiscount = subtotal - discount;
+                const subtotalWithShipping = subtotalAfterDiscount + shippingCost;
+                const iva = subtotalWithShipping * 0.19;
+                const total = subtotalWithShipping + iva;
+                
+                // Mostrar toda la información completa
+                pricingDetails.innerHTML = `
+                    <div style="display: flex; justify-content: space-between; margin-bottom: 8px;">
+                        <span style="font-weight: 600;">Subtotal productos:</span>
+                        <span style="font-weight: bold;">$${subtotal.toLocaleString()}</span>
+                    </div>
+                    ${discountInfo}
+                    <div style="display: flex; justify-content: space-between; margin-bottom: 8px;">
+                        <span style="font-weight: 600;">Envío (${selectedShipping.tipo}):</span>
+                        <span style="font-weight: bold;">${shippingCost === 0 ? 'GRATIS' : '$' + shippingCost.toLocaleString()}</span>
+                    </div>
+                    <div style="display: flex; justify-content: space-between; margin-bottom: 8px;">
+                        <span style="font-weight: 600;">IVA (19%):</span>
+                        <span style="font-weight: bold;">$${iva.toLocaleString()}</span>
+                    </div>
+                    <div style="display: flex; justify-content: space-between; margin-bottom: 8px; padding-top: 8px; border-top: 1px solid #dee2e6;">
+                        <span style="font-weight: 600; font-size: 18px; color: #28a745;">Total final:</span>
+                        <span style="font-weight: bold; color: #28a745; font-size: 18px;">$${total.toLocaleString()}</span>
+                    </div>
+                `;
+            });
+        }
+        
+        // Aplicar cupón de descuento
+        async function applyCoupon() {
+            const couponInput = document.getElementById('coupon-code');
+            const messageDiv = document.getElementById('coupon-message');
+            const couponCode = couponInput.value.trim().toUpperCase();
+            
+            if (!couponCode) {
+                messageDiv.innerHTML = '<span style="color: #e74c3c;">⚠️ Ingresa un código de cupón</span>';
+                return;
+            }
+            
+            try {
+                const coupons = await getCoupons();
+                const coupon = coupons.find(c => c.codigo === couponCode);
+                
+                if (!coupon) {
+                    messageDiv.innerHTML = '<span style="color: #e74c3c;">❌ Cupón no válido</span>';
+                    return;
+                }
+                
+                // Calcular subtotal actual
+                const cart = getCart();
+                const products = await getProducts();
+                let subtotal = 0;
+                
+                cart.forEach(item => {
+                    const product = products.find(p => p.id === item.id);
+                    if (product) {
+                        subtotal += product.precio * item.quantity;
+                    }
+                });
+                
+                // Verificar mínimo de compra
+                if (subtotal < coupon.minimo_compra) {
+                    messageDiv.innerHTML = `<span style="color: #e74c3c;">⚠️ Monto mínimo requerido: $${coupon.minimo_compra.toLocaleString()}</span>`;
+                    return;
+                }
+                
+                appliedCoupon = coupon;
+                messageDiv.innerHTML = `<span style="color: #28a745;">✅ ${coupon.descripcion}</span>`;
+                couponInput.style.background = '#e8f5e8';
+                
+                // Actualizar totales
+                updateCheckoutTotals();
+                
+                // Actualizar resumen de precios visible
+                updatePricingSummary();
+                
+                // Mostrar notificación de éxito
+                showCheckoutNotification(`🎉 Cupón ${coupon.codigo} aplicado correctamente!`);
+                
+                console.log('✅ Cupón aplicado:', appliedCoupon);
+                
+            } catch (error) {
+                console.error('Error aplicando cupón:', error);
+                messageDiv.innerHTML = '<span style="color: #e74c3c;">❌ Error aplicando cupón</span>';
+            }
+        }
+
         // Obtener opciones de envío
         async function getShippingOptions() {
             try {
@@ -252,7 +462,7 @@
                 return [];
             }
         }
-        
+
         // Renderizar opciones de envío
         async function renderShippingOptions() {
             console.log('🚚 Cargando opciones de envío...');
@@ -319,6 +529,9 @@
                 // Actualizar totales del checkout
                 updateCheckoutTotals();
                 
+                // Actualizar resumen de precios visible
+                updatePricingSummary();
+                
                 // Mostrar/ocultar campo de dirección según el tipo de envío
                 const addressField = document.getElementById('address');
                 if (selectedShipping.tipo === 'Retiro en tienda') {
@@ -333,12 +546,12 @@
             }
         }
         
-        // Actualizar totales incluyendo costo de envío
+        // Actualizar totales incluyendo costo de envío y cupones
         function updateCheckoutTotals() {
             const totalDiv = document.getElementById('checkout-total');
             if (!totalDiv || !selectedShipping) return;
             
-            // Recalcular totales con envío
+            // Recalcular totales con envío y cupones
             const cart = getCart();
             if (cart.length === 0) return;
             
@@ -352,41 +565,57 @@
                     }
                 });
                 
-                const shippingCost = selectedShipping.costo;
-                const subtotalWithShipping = subtotal + shippingCost;
+                let shippingCost = selectedShipping.costo;
+                let discount = 0;
+                let discountInfo = '';
+                
+                // Aplicar descuentos de cupón
+                if (appliedCoupon) {
+                    if (appliedCoupon.tipo === 'porcentaje') {
+                        discount = subtotal * (appliedCoupon.valor / 100);
+                        discountInfo = `<div style="display: flex; justify-content: space-between; margin-bottom: 8px; color: #28a745;">
+                            <span>Descuento ${appliedCoupon.codigo} (-${appliedCoupon.valor}%):</span>
+                            <span>-$${discount.toLocaleString()}</span>
+                        </div>`;
+                    } else if (appliedCoupon.tipo === 'envio_gratis') {
+                        shippingCost = 0; // Envío gratis
+                        discountInfo = `<div style="display: flex; justify-content: space-between; margin-bottom: 8px; color: #28a745;">
+                            <span>Descuento ${appliedCoupon.codigo} (Envío gratis):</span>
+                            <span>-$${selectedShipping.costo.toLocaleString()}</span>
+                        </div>`;
+                    }
+                }
+                
+                const subtotalAfterDiscount = subtotal - discount;
+                const subtotalWithShipping = subtotalAfterDiscount + shippingCost;
                 const iva = subtotalWithShipping * 0.19;
                 const total = subtotalWithShipping + iva;
                 
-                totalDiv.innerHTML = `
-                    <div style="border-top: 2px solid #eee; padding-top: 16px; margin-top: 16px;">
-                        <div style="display: flex; justify-content: space-between; margin-bottom: 8px;">
-                            <span>Subtotal productos:</span>
-                            <span>$${subtotal.toLocaleString()}</span>
-                        </div>
-                        <div style="display: flex; justify-content: space-between; margin-bottom: 8px;">
-                            <span>Envío (${selectedShipping.tipo}):</span>
-                            <span class="${shippingCost === 0 ? 'free' : ''}">${shippingCost === 0 ? 'GRATIS' : '$' + shippingCost.toLocaleString()}</span>
-                        </div>
-                        <div style="display: flex; justify-content: space-between; margin-bottom: 8px; padding-top: 8px; border-top: 1px solid #eee;">
-                            <span>Subtotal con envío:</span>
-                            <span>$${subtotalWithShipping.toLocaleString()}</span>
-                        </div>
-                        <div style="display: flex; justify-content: space-between; margin-bottom: 8px;">
-                            <span>IVA (19%):</span>
-                            <span>$${iva.toLocaleString()}</span>
-                        </div>
-                        <div style="display: flex; justify-content: space-between; font-size: 22px; font-weight: bold; color: #007bff;">
-                            <span>Total final:</span>
-                            <span>$${total.toLocaleString()}</span>
-                        </div>
-                    </div>
-                `;
+                // Precio con IVA incluido (antes de cupón)
+                const precioConIVA = subtotal * 1.19;
                 
-                console.log('💰 Totales actualizados con envío:', {
+                // Precio final con cupón aplicado (si hay cupón)
+                const precioFinalConCupon = total;
+                
+                let precioFinalInfo = '';
+                if (appliedCoupon) {
+                    precioFinalInfo = `
+                        <div style="display: flex; justify-content: space-between; margin-bottom: 12px; padding: 10px; background: #e8f5e8; border-radius: 6px; border-left: 4px solid #28a745;">
+                            <span style="font-weight: bold; color: #155724;">💰 Precio final con cupón:</span>
+                            <span style="font-weight: bold; color: #155724; font-size: 18px;">$${precioFinalConCupon.toLocaleString()}</span>
+                        </div>`;
+                }
+                
+                // Limpiar la sección de totales - solo productos arriba
+                totalDiv.innerHTML = '';
+                
+                console.log('💰 Totales actualizados con cupón:', {
                     subtotal,
+                    descuento: discount,
                     envio: shippingCost,
                     iva,
-                    total
+                    total,
+                    cupon: appliedCoupon?.codigo || 'Ninguno'
                 });
             });
         }
@@ -451,6 +680,9 @@
                 iva = subtotal * 0.19; // IVA del 19%
                 total = subtotal + iva;
                 
+                // Precio con IVA incluido
+                const precioConIVA = total;
+                
                 console.log('💰 Cálculos finales:');
                 console.log('Subtotal:', subtotal);
                 console.log('IVA:', iva);
@@ -466,7 +698,11 @@
                             <span>IVA (19%):</span>
                             <span>$${iva.toLocaleString()}</span>
                         </div>
-                        <div style="display: flex; justify-content: space-between; font-size: 22px; font-weight: bold; color: #007bff;">
+                        <div style="display: flex; justify-content: space-between; margin-bottom: 12px; font-weight: bold; color: #007bff; font-size: 18px; padding: 8px; background: #f0f7ff; border-radius: 6px;">
+                            <span>🏷️ Precio (IVA incluido):</span>
+                            <span>$${precioConIVA.toLocaleString()}</span>
+                        </div>
+                        <div style="display: flex; justify-content: space-between; font-size: 22px; font-weight: bold; color: #28a745;">
                             <span>Total a pagar:</span>
                             <span>$${total.toLocaleString()}</span>
                         </div>
@@ -474,6 +710,11 @@
                 `;
                 
                 console.log('✅ Checkout renderizado exitosamente');
+                
+                // Actualizar resumen de precios después de renderizar productos
+                if (selectedShipping) {
+                    updatePricingSummary();
+                }
             } catch (error) {
                 console.error('❌ Error cargando productos:', error);
                 container.innerHTML = '<p style="color: red;">Error cargando productos. Revisa la consola para más detalles.</p>';
@@ -530,6 +771,9 @@
             console.log('DOM cargado, iniciando checkout...');
             renderCheckoutProducts();
             renderShippingOptions();
+            
+            // Event listener para aplicar cupón
+            document.getElementById('apply-coupon').addEventListener('click', applyCoupon);
         });
         
         // También llamar directamente por si acaso
