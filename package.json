@@ -1,0 +1,11 @@
+{
+  "name": "web-mini-market-unified",
+  "version": "0.0.0",
+  "private": true,
+  "scripts": {
+    "dev": "npm --prefix react-app run dev",
+    "install:react": "npm --prefix react-app install",
+    "start:react": "npm --prefix react-app run dev",
+    "build:react": "npm --prefix react-app run build"
+  }
+}
