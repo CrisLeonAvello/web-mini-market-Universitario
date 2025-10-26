@@ -11,6 +11,7 @@ import "./styles.css";
 import "./animations.css";
 import "./components.css";
 
+
 function App() {
   const [loading, setLoading] = useState(true);
 

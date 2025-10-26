@@ -1,0 +1,30 @@
+/* Estilos básicos para el dashboard de escalabilidad */
+.escalabilidad-dashboard {
+  background: #f8f9fa;
+  border-radius: 8px;
+  padding: 24px;
+  margin-bottom: 24px;
+  box-shadow: 0 2px 8px rgba(0,0,0,0.07);
+}
+.escalabilidad-dashboard h2 {
+  font-size: 1.3rem;
+  margin-bottom: 16px;
+}
+.escalabilidad-dashboard ul {
+  list-style: none;
+  padding: 0;
+}
+.escalabilidad-dashboard li {
+  margin-bottom: 12px;
+  padding: 8px 0;
+  border-bottom: 1px solid #e0e0e0;
+  display: flex;
+  align-items: center;
+}
+.escalabilidad-dashboard li.en-curso {
+  background: #e6f7ff;
+  font-weight: bold;
+}
+.escalabilidad-dashboard li.pendiente {
+  color: #888;
+}
