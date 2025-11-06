@@ -1,0 +1,23 @@
+# FastAPI y servidor
+fastapi==0.104.1
+uvicorn[standard]==0.24.0
+
+# Validación de datos
+pydantic==2.5.0
+pydantic-settings==2.1.0
+
+# Base de datos (opcional)
+sqlalchemy==2.0.23
+alembic==1.13.0
+
+# Autenticación y seguridad (opcional)
+python-jose[cryptography]==3.3.0
+passlib[bcrypt]==1.7.4
+python-multipart==0.0.6
+
+# CORS
+python-dotenv==1.0.0
+
+# Testing (opcional)
+pytest==7.4.3
+httpx==0.25.2
