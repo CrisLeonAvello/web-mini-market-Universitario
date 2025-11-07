@@ -1,5 +1,5 @@
 import React, { createContext, useContext, useEffect, useState } from 'react';
-import { getTransformedProducts, getTransformedCategories } from '../services/fakeStoreApi';
+import { getTransformedProducts, getTransformedCategories } from '../services';
 
 const ProductsContext = createContext();
 
@@ -47,11 +47,11 @@ export function ProductsProvider({ children }) {
       // Simular evento de carga para loading screen
       if (typeof CustomEvent !== 'undefined' && typeof document !== 'undefined') {
         document.dispatchEvent(new CustomEvent('resourceLoaded', {
-          detail: 'Loading products from FakeStore API...'
+          detail: 'Loading products from backend API...'
         }));
       }
       
-      console.log('🔄 Cargando productos desde FakeStore API...');
+      console.log('🔄 Cargando productos desde backend API...');
       console.log('📞 Llamando a getTransformedProducts()...');
       
       const products = await getTransformedProducts();

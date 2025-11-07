@@ -6,9 +6,15 @@ uvicorn[standard]==0.24.0
 pydantic==2.5.0
 pydantic-settings==2.1.0
 
-# Base de datos (opcional)
+# Base de datos
 sqlalchemy==2.0.23
 alembic==1.13.0
+
+# Database drivers
+pymysql==1.1.0  # MySQL driver para SQLAlchemy
+psycopg2-binary==2.9.9  # PostgreSQL driver (opcional)
+# Si usas MySQL con mysqlclient (alternativa más rápida):
+# mysqlclient==2.2.0
 
 # Autenticación y seguridad (opcional)
 python-jose[cryptography]==3.3.0

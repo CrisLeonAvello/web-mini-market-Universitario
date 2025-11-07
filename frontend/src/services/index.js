@@ -3,7 +3,8 @@
  * Exporta todos los servicios de la aplicación
  */
 
-export * from './fakeStoreApi';
+// Export all API methods from a single file
+export * from './api';
 
 // Configuración de la API
 export const API_CONFIG = {

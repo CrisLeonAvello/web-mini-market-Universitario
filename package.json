@@ -1,0 +1,11 @@
+{
+  "name": "web-mini-market-Universitario-root",
+  "private": true,
+  "version": "1.0.0",
+  "description": "Root helper package.json to run frontend scripts from repository root",
+  "scripts": {
+    "dev": "npm --prefix frontend run dev",
+    "start": "npm --prefix frontend run dev",
+    "install:frontend": "npm --prefix frontend install"
+  }
+}
