@@ -22,7 +22,9 @@ from app.schemas import (
 
 # ==================== PRODUCTOS ====================
 
-router_products = APIRouter(prefix="/api/products", tags=["Products"])
+# NOTE: No prefix here so main.py can register the router with
+# both English and Spanish prefixes (e.g. /api/products and /api/productos).
+router_products = APIRouter(tags=["Products"])
 
 @router_products.post("/", response_model=ProductResponse, status_code=status.HTTP_201_CREATED)
 async def create_product(product: ProductCreate):
@@ -50,6 +52,7 @@ async def create_product(product: ProductCreate):
 
 
 @router_products.get("/", response_model=ProductList)
+@router_products.get("", response_model=ProductList)  # Ruta sin barra final
 async def list_products(
     page: int = 1,
     page_size: int = 10,
@@ -124,7 +127,7 @@ async def delete_product(product_id: int):
 
 # ==================== CARRITO ====================
 
-router_cart = APIRouter(prefix="/api/cart", tags=["Cart"])
+router_cart = APIRouter(tags=["Cart"])
 
 @router_cart.get("/", response_model=CartResponse)
 async def get_cart(user_id: int = 1):
@@ -182,7 +185,7 @@ async def remove_from_cart(item_id: int, user_id: int = 1):
 
 # ==================== USUARIOS ====================
 
-router_users = APIRouter(prefix="/api/users", tags=["Users"])
+router_users = APIRouter(tags=["Users"])
 
 @router_users.post("/register", response_model=UserResponse, status_code=status.HTTP_201_CREATED)
 async def register_user(user: UserCreate):

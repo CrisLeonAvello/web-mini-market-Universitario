@@ -1,8 +1,17 @@
-import React from 'react';
+import React, { useState, useEffect } from 'react';
 import Cart from './Cart';
 import WishlistDropdown from './WishlistDropdown';
+import authService from '../services/authService';
 
-const Header = () => {
+const Header = ({ user, onLoginClick, onLogout }) => {
+  const [dropdownOpen, setDropdownOpen] = useState(false);
+
+  const handleLogout = () => {
+    authService.logout();
+    onLogout();
+    setDropdownOpen(false);
+  };
+
   return (
     <header className="header">
       <div className="header-container">
@@ -22,6 +31,45 @@ const Header = () => {
         <div className="header-actions">
           <WishlistDropdown />
           <Cart />
+          
+          {/* Autenticación */}
+          {user ? (
+            <div className="user-dropdown">
+              <button 
+                className="user-button"
+                onClick={() => setDropdownOpen(!dropdownOpen)}
+              >
+                <span className="user-icon">👤</span>
+                <span className="user-name">{user.name}</span>
+                <span className="dropdown-arrow">▼</span>
+              </button>
+              
+              {dropdownOpen && (
+                <div className="dropdown-menu">
+                  <div className="dropdown-item user-info">
+                    <strong>{user.name}</strong>
+                    <small>{user.email}</small>
+                  </div>
+                  <hr className="dropdown-divider" />
+                  <button className="dropdown-item" onClick={() => setDropdownOpen(false)}>
+                    Mi Perfil
+                  </button>
+                  <button className="dropdown-item" onClick={() => setDropdownOpen(false)}>
+                    Mis Pedidos
+                  </button>
+                  <hr className="dropdown-divider" />
+                  <button className="dropdown-item logout" onClick={handleLogout}>
+                    Cerrar Sesión
+                  </button>
+                </div>
+              )}
+            </div>
+          ) : (
+            <button className="login-button" onClick={onLoginClick}>
+              <span className="login-icon">🚀</span>
+              Iniciar Sesión
+            </button>
+          )}
         </div>
       </div>
 
@@ -103,6 +151,139 @@ const Header = () => {
           align-items: center;
           gap: 1rem;
           position: relative;
+        }
+        
+        .login-button {
+          background: rgba(255,255,255,0.2);
+          border: 1px solid rgba(255,255,255,0.3);
+          color: white;
+          padding: 0.5rem 1rem;
+          border-radius: 8px;
+          cursor: pointer;
+          font-weight: 500;
+          transition: all 0.2s ease;
+          display: flex;
+          align-items: center;
+          gap: 0.5rem;
+          font-size: 0.9rem;
+        }
+        
+        .login-button:hover {
+          background: rgba(255,255,255,0.3);
+          transform: translateY(-1px);
+        }
+        
+        .login-icon {
+          font-size: 1rem;
+        }
+        
+        .user-dropdown {
+          position: relative;
+        }
+        
+        .user-button {
+          background: rgba(255,255,255,0.2);
+          border: 1px solid rgba(255,255,255,0.3);
+          color: white;
+          padding: 0.5rem 1rem;
+          border-radius: 8px;
+          cursor: pointer;
+          font-weight: 500;
+          transition: all 0.2s ease;
+          display: flex;
+          align-items: center;
+          gap: 0.5rem;
+          font-size: 0.9rem;
+        }
+        
+        .user-button:hover {
+          background: rgba(255,255,255,0.3);
+        }
+        
+        .user-icon {
+          font-size: 1rem;
+        }
+        
+        .user-name {
+          max-width: 100px;
+          overflow: hidden;
+          text-overflow: ellipsis;
+          white-space: nowrap;
+        }
+        
+        .dropdown-arrow {
+          font-size: 0.7rem;
+          transition: transform 0.2s ease;
+        }
+        
+        .user-dropdown.open .dropdown-arrow {
+          transform: rotate(180deg);
+        }
+        
+        .dropdown-menu {
+          position: absolute;
+          top: 100%;
+          right: 0;
+          background: white;
+          border-radius: 8px;
+          box-shadow: 0 4px 20px rgba(0,0,0,0.15);
+          min-width: 200px;
+          z-index: 1000;
+          overflow: hidden;
+          margin-top: 0.5rem;
+          border: 1px solid rgba(0,0,0,0.1);
+        }
+        
+        .dropdown-item {
+          display: block;
+          width: 100%;
+          padding: 0.75rem 1rem;
+          background: none;
+          border: none;
+          text-align: left;
+          cursor: pointer;
+          transition: background-color 0.2s ease;
+          color: #333;
+          font-size: 0.9rem;
+        }
+        
+        .dropdown-item:hover {
+          background-color: #f5f5f5;
+        }
+        
+        .dropdown-item.user-info {
+          cursor: default;
+          border-bottom: 1px solid #eee;
+        }
+        
+        .dropdown-item.user-info:hover {
+          background: none;
+        }
+        
+        .dropdown-item.user-info strong {
+          display: block;
+          font-weight: 600;
+          margin-bottom: 0.25rem;
+        }
+        
+        .dropdown-item.user-info small {
+          color: #666;
+          font-size: 0.8rem;
+        }
+        
+        .dropdown-item.logout {
+          color: #e74c3c;
+          border-top: 1px solid #eee;
+        }
+        
+        .dropdown-item.logout:hover {
+          background-color: #ffeaea;
+        }
+        
+        .dropdown-divider {
+          margin: 0;
+          border: none;
+          border-top: 1px solid #eee;
         }
         
         @media (max-width: 768px) {

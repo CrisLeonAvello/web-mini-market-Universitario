@@ -31,6 +31,11 @@ from .user import (
     UserLogin
 )
 
+from .user import (
+    Token,
+    TokenData
+)
+
 __all__ = [
     # Product schemas
     "ProductBase",
@@ -50,4 +55,6 @@ __all__ = [
     "UserUpdate",
     "UserResponse",
     "UserLogin",
+    "Token",
+    "TokenData",
 ]

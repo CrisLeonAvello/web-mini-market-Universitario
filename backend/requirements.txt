@@ -24,6 +24,9 @@ python-multipart==0.0.6
 # CORS
 python-dotenv==1.0.0
 
+# Dependency required by pydantic for email fields - version compatible with pydantic 2.x
+email-validator==2.1.0
+
 # Testing (opcional)
 pytest==7.4.3
 httpx==0.25.2

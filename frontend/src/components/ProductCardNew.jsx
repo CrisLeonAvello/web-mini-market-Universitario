@@ -4,6 +4,7 @@ import { useWishlist } from '../contexts/WishlistContext';
 
 export default function ProductCardNew({ product, onOpenModal }) {
   const [showNotification, setShowNotification] = useState('');
+  const [imageError, setImageError] = useState(false);
   
   // Verificación de producto válido
   if (!product || !product.id) {
@@ -25,12 +26,34 @@ export default function ProductCardNew({ product, onOpenModal }) {
   
   const isInWishlist = wishlist.includes(product.id.toString());
   
-  // Adaptar los datos de la API a nuestro formato
-  const imageUrl = product.image || '/placeholder-image.jpg';
+  // Adaptar los datos de la API a nuestro formato (mover aquí para que esté disponible)
+  const category = product.category || 'Sin categoría';
+  
+  // Función para obtener imagen de fallback basada en categoría
+  const getImageWithFallback = () => {
+    if (imageError || !product.image) {
+      // Imágenes de fallback por categoría
+      const fallbackImages = {
+        'Electrónicos': 'https://images.unsplash.com/photo-1498049794561-7780e7231661?w=300&h=300&fit=crop',
+        'Librería': 'https://images.unsplash.com/photo-1481627834876-b7833e8f5570?w=300&h=300&fit=crop',
+        'Alimentos': 'https://images.unsplash.com/photo-1506617564039-2f9b62d3fc40?w=300&h=300&fit=crop',
+        'default': 'https://images.unsplash.com/photo-1560472354-b33ff0c44a43?w=300&h=300&fit=crop'
+      };
+      
+      return fallbackImages[category] || fallbackImages['default'];
+    }
+    return product.image;
+  };
+
+  const handleImageError = () => {
+    setImageError(true);
+  };
+  
+  // Adaptar los datos de la API a nuestro formato (resto de variables)
+  const imageUrl = getImageWithFallback();
   const title = product.title || 'Producto sin título';
   const description = product.description || 'Sin descripción';
   const price = product.price || 0;
-  const category = product.category || 'Sin categoría';
   const rating = product.rating?.rate || product.rating || 0;
   const ratingCount = product.rating?.count || 0;
   const stock = Math.floor(Math.random() * 20) + 5; // Stock aleatorio
@@ -148,6 +171,7 @@ export default function ProductCardNew({ product, onOpenModal }) {
             alt={title}
             className="product-image"
             loading="lazy"
+            onError={handleImageError}
           />
           
           {/* Botón de wishlist flotante */}

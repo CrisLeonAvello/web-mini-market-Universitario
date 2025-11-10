@@ -33,7 +33,10 @@ services:
       - ./backend:/app
     environment:
       - DATABASE_URL=mysql+pymysql://minimarket_user:minimarket_pass@db:3306/minimarket_db
-      - SECRET_KEY=your-super-secret-key-change-in-production-123456
+      - SECRET_KEY=minimarket-secret-key-2025-super-secure
+      # API URL should include the /api prefix so frontend requests
+      # like `/productos` are sent to http://localhost:8000/api/productos
+      - VITE_API_URL=http://localhost:8000/api
       - ALGORITHM=HS256
       - ACCESS_TOKEN_EXPIRE_MINUTES=30
     depends_on:
@@ -59,7 +62,9 @@ services:
       - ./frontend:/app
       - /app/node_modules
     environment:
-      - VITE_API_URL=http://localhost:8000
+      # API base debe incluir /api para que las rutas del frontend se construyan correctamente
+      # Usar localhost:8000 para que el navegador del host pueda acceder al backend
+      - VITE_API_URL=http://localhost:8000/api
     depends_on:
       - backend
     networks:

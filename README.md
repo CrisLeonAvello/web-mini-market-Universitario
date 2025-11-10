@@ -1,6 +1,36 @@
-# Web Mini Market Universitario
+# 🎓 StudiMarket - Mini Market Universitario
 
-E-commerce moderno desarrollado con React (frontend) y preparado para integración con FastAPI (backend).
+## 📖 Descripción
+Sistema completo de e-commerce universitario con autenticación JWT, gestión de productos y carrito de compras. Desarrollado con React + FastAPI + MySQL.
+
+## 🚀 Características Principales
+
+### 🔐 Autenticación Completa
+- ✅ Registro de usuarios con validación
+- ✅ Login/logout con JWT tokens
+- ✅ Verificación de sesiones
+- ✅ Roles de usuario (admin/cliente)
+- ✅ Persistencia de sesión
+
+### 🛍️ Gestión de Productos
+- ✅ Catálogo completo con 10 productos
+- ✅ Precios en CLP (Pesos Chilenos) sin comas
+- ✅ Filtros por categoría y precio
+- ✅ Búsqueda en tiempo real
+- ✅ Paginación de resultados
+
+### 🎨 Interfaz de Usuario
+- ✅ Tema espacial con animaciones
+- ✅ Navegación tipo Amazon (login en página separada)
+- ✅ Landing page con productos destacados
+- ✅ Responsive design
+- ✅ Carrito de compras funcional
+
+### 🗄️ Base de Datos
+- ✅ MySQL 8.0 con Docker
+- ✅ 10 productos preinstalados
+- ✅ Usuarios con contraseñas hasheadas
+- ✅ Migraciones con Alembic
 
 ## 📁 Estructura del Proyecto
 

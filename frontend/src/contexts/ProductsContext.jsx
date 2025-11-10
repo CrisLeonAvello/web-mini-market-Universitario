@@ -30,6 +30,7 @@ export function ProductsProvider({ children }) {
 
   // Cargar productos al inicializar
   useEffect(() => {
+    console.log('🚀 ProductsProvider useEffect ejecutado - cargando productos y categorías...');
     loadProducts();
     loadCategories();
   }, []);

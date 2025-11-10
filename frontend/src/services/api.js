@@ -5,12 +5,24 @@
 
 const API_BASE_URL = import.meta.env.VITE_API_URL || 'http://localhost:8000/api';
 
+console.log('🌍 API Configuration:');
+console.log('  - import.meta.env.VITE_API_URL:', import.meta.env.VITE_API_URL);
+console.log('  - API_BASE_URL:', API_BASE_URL);
+console.log('  - Environment mode:', import.meta.env.MODE);
+
 /**
  * Helper para hacer requests HTTP
  */
 async function apiRequest(endpoint, options = {}) {
   try {
     const url = `${API_BASE_URL}${endpoint}`;
+    console.log('🌐 API Request:', {
+      endpoint,
+      url,
+      API_BASE_URL,
+      options
+    });
+    
     const response = await fetch(url, {
       headers: {
         'Content-Type': 'application/json',
@@ -19,13 +31,30 @@ async function apiRequest(endpoint, options = {}) {
       ...options,
     });
 
+    console.log('📡 API Response:', {
+      url,
+      status: response.status,
+      statusText: response.statusText,
+      ok: response.ok,
+      headers: Object.fromEntries(response.headers.entries())
+    });
+
     if (!response.ok) {
       throw new Error(`HTTP error! status: ${response.status}`);
     }
 
-    return await response.json();
+    const data = await response.json();
+    console.log('📦 API Data received:', data);
+    return data;
   } catch (error) {
-    console.error(`Error en API request ${endpoint}:`, error);
+    console.error(`❌ Error en API request ${endpoint}:`, error);
+    console.error('🔍 Error details:', {
+      name: error.name,
+      message: error.message,
+      stack: error.stack,
+      endpoint,
+      url: `${API_BASE_URL}${endpoint}`
+    });
     throw error;
   }
 }
@@ -168,20 +197,20 @@ export async function logout() {
  */
 export function transformProduct(product) {
   return {
-    id: product.id_producto,
-    title: product.titulo,
-    name: product.titulo,
-    price: parseFloat(product.precio),
-    description: product.descripcion,
-    category: product.categoria,
-    image: product.imagen,
-    stock: product.stock,
+    id: product.id || product.id_producto,
+    title: product.title || product.titulo,
+    name: product.name || product.title || product.titulo,
+    price: parseFloat(product.price || product.precio),
+    description: product.description || product.descripcion || "",
+    category: product.category || product.categoria,
+    image: product.image || product.imagen,
+    stock: product.stock || 0,
     rating: {
-      rate: product.rating_rate ? parseFloat(product.rating_rate) : 0,
-      count: product.rating_count || 0,
+      rate: product.rating?.rate || product.rating_rate ? parseFloat(product.rating?.rate || product.rating_rate) : 0,
+      count: product.rating?.count || product.rating_count || 0,
     },
-    featured: false, // Puedes agregar este campo en el backend si lo necesitas
-    tags: [product.categoria],
+    featured: product.featured || false,
+    tags: product.tags || [product.category || product.categoria],
   };
 }
 
@@ -189,8 +218,23 @@ export function transformProduct(product) {
  * Obtiene productos transformados (compatible con frontend actual)
  */
 export async function getTransformedProducts(params = {}) {
-  const products = await getAllProducts(params);
-  return Array.isArray(products) ? products.map(transformProduct) : [];
+  const response = await getAllProducts(params);
+  console.log('🔍 Raw API Response:', response);
+  
+  // La API devuelve { products: [...], total: ..., page: ... }
+  // Necesitamos extraer solo el array de productos
+  const products = response.products || response || [];
+  console.log('📦 Products array:', products);
+  
+  if (!Array.isArray(products)) {
+    console.error('❌ Products is not an array:', typeof products, products);
+    return [];
+  }
+  
+  const transformedProducts = products.map(transformProduct);
+  console.log('✨ Transformed products:', transformedProducts);
+  
+  return transformedProducts;
 }
 
 /**
