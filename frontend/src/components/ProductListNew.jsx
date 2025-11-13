@@ -63,7 +63,7 @@ export default function ProductListNew(){
   
   return (
     <>
-      <div className="products-grid">
+      <div className="products-grid space-products-grid">
         {filteredProducts.map((product, index) => {
           console.log('🏷️ Renderizando producto:', product.id, product.title)
           return (

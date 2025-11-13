@@ -103,7 +103,7 @@ export default function LandingPage({ onEnterStore, onShowLogin, user, onLogout 
               <span className="nav-icon">📁</span>CATEGORÍAS
             </a>
             <a href="#nosotros" className="nav-link space-nav-link">
-              <span className="nav-icon">�</span>NOSOTROS
+              NOSOTROS
             </a>
           </nav>
           
@@ -216,12 +216,12 @@ export default function LandingPage({ onEnterStore, onShowLogin, user, onLogout 
                 <div className="core-ring ring-1"></div>
                 <div className="core-ring ring-2"></div>
                 <div className="core-ring ring-3"></div>
-                <div className="station-center">�️</div>
+                <div className="station-center">🏪</div>
               </div>
               
               <div className="orbiting-elements">
                 <div className="orbit orbit-1">
-                  <div className="satellite">�</div>
+                  <div className="satellite">🛒</div>
                 </div>
                 <div className="orbit orbit-2">
                   <div className="satellite">📚</div>

@@ -46,11 +46,12 @@ export default function WishlistModal() {
   return (
     <>
       <button 
-        className="nav-btn wishlist-btn" 
+        className="nav-btn space-nav-btn wishlist-btn" 
         onClick={() => setIsOpen(!isOpen)}
         title="Lista de favoritos"
       >
-        ❤️ Favoritos ({wishlist.length})
+        <span className="btn-icon">❤️</span>
+        <span>Favoritos ({wishlist.length})</span>
       </button>
 
       {isOpen && (

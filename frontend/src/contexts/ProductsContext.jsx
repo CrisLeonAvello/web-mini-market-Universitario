@@ -172,7 +172,8 @@ export function ProductsProvider({ children }) {
   };
 
   const getCategories = () => {
-    const categories = [...new Set(allProducts.map(p => p.categoria))];
+    // Extraer categorías únicas de los productos
+    const categories = [...new Set(allProducts.map(p => p.category || p.categoria).filter(Boolean))];
     return categories.sort();
   };
 

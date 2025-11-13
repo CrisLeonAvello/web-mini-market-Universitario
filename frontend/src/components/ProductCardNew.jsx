@@ -144,7 +144,7 @@ export default function ProductCardNew({ product, onOpenModal }) {
 
   return (
     <>
-      <article className="product-card animate-fade-in" onClick={handleCardClick}>
+      <article className="product-card space-product-card animate-fade-in" onClick={handleCardClick}>
         {/* Etiquetas superiores */}
         <div className="product-badges">
           {isOnSale && (

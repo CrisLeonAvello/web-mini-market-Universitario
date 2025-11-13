@@ -28,8 +28,11 @@ RUN pip install --no-cache-dir pymysql cryptography
 # Copiar código fuente
 COPY . .
 
+# Dar permisos de ejecución al script de inicialización
+RUN chmod +x init_db.sh
+
 # Exponer puerto de FastAPI
 EXPOSE 8000
 
-# Comando para desarrollo con hot reload
-CMD ["uvicorn", "app.main:app", "--host", "0.0.0.0", "--port", "8000", "--reload"]
+# Usar el script de inicialización que ejecuta migraciones y seed
+CMD ["./init_db.sh"]

@@ -48,11 +48,12 @@ export default function CartModalNew() {
   return (
     <>
       <button 
-        className="nav-btn cart-btn" 
+        className="nav-btn space-nav-btn cart-btn" 
         onClick={() => setIsOpen(!isOpen)}
         title="Carrito de compras"
       >
-        🛒 Carrito ({itemCount})
+        <span className="btn-icon">🛒</span>
+        <span>Carrito ({itemCount})</span>
       </button>
 
       {isOpen && (

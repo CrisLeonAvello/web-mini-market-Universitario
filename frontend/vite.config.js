@@ -7,7 +7,11 @@ export default defineConfig({
   server: {
     port: 5173,
     host: true,
-    open: false
+    open: false,
+    watch: {
+      usePolling: true,  // Necesario para Docker en Windows
+      interval: 1000     // Verificar cambios cada segundo
+    }
   },
   build: {
     outDir: 'dist',

@@ -58,6 +58,8 @@ export default function Filters() {
   };
 
   const handleRatingClick = (rating) => {
+    // Si haces clic en la misma estrella, desactiva el filtro
+    // Si haces clic en una estrella diferente, actualiza el rating
     const newRating = filters.minRating === rating ? 0 : rating;
     updateFilters({ minRating: newRating });
     console.log(`⭐ Filtro de rating: ${newRating} estrellas`);
@@ -65,18 +67,21 @@ export default function Filters() {
 
   const renderStars = () => {
     return [1, 2, 3, 4, 5].map(rating => (
-      <div 
+      <span 
         key={rating}
         className={`star ${rating <= filters.minRating ? 'active' : ''}`}
         data-rating={rating}
         onClick={() => handleRatingClick(rating)}
+        title={`${rating} estrella${rating > 1 ? 's' : ''}`}
         style={{
-          color: rating <= filters.minRating ? '#ffd700' : '#ddd',
-          cursor: 'pointer'
+          color: rating <= filters.minRating ? '#ffd700' : 'rgba(255, 215, 0, 0.3)',
+          cursor: 'pointer',
+          fontSize: '1.5rem',
+          transition: 'all 0.3s ease'
         }}
       >
         ★
-      </div>
+      </span>
     ));
   };
 
@@ -96,12 +101,16 @@ export default function Filters() {
     <aside className="filters">
       <div className="filters-header">
         <h3>Filtros</h3>
+        <p>Encuentra lo que buscas</p>
+      </div>
+      
+      <div className="filter-group">
         <button 
-          className="reset-filters-btn" 
+          className="reset-filters-btn reset-filters-btn-wide" 
           onClick={handleResetFilters}
           title="Resetear todos los filtros"
         >
-          🔄 Limpiar
+          Limpiar
         </button>
       </div>
 

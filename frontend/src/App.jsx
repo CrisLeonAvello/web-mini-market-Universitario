@@ -169,10 +169,6 @@ function App() {
               <div className="main-content space-main-content">
                 <div className="filters-section space-filters-section">
                   <aside className="filters space-filters">
-                    <div className="filters-header">
-                      <h3>� Filtros</h3>
-                      <p>Encuentra lo que buscas</p>
-                    </div>
                     <FiltersNew />
                   </aside>
                   
