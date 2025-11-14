@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { useCart } from '../contexts/CartContext';
-import Checkout from './Checkout';
+import CheckoutModal from './CheckoutModal';
 
 export default function CartModalNew() {
   const [isOpen, setIsOpen] = useState(false);
@@ -39,7 +39,12 @@ export default function CartModalNew() {
       showNotificationMessage('❌ El carrito está vacío');
       return;
     }
+    setIsOpen(false);
     setShowCheckout(true);
+  };
+
+  const handleCloseCheckout = () => {
+    setShowCheckout(false);
   };
 
   const total = getTotalPrice();
@@ -56,13 +61,16 @@ export default function CartModalNew() {
         <span>Carrito ({itemCount})</span>
       </button>
 
+      <CheckoutModal isOpen={showCheckout} onClose={handleCloseCheckout} />
+
       {isOpen && (
-        <div className="modal-overlay" onClick={() => setIsOpen(false)}>
-          <div className="modal-content cart-modal" onClick={e => e.stopPropagation()}>
-            <div className="modal-header">
-              <h2>🛒 Mi Carrito de Compras</h2>
-              <button className="close-btn" onClick={() => setIsOpen(false)}>×</button>
-            </div>
+        <>
+          <div className="cart-modal-overlay" onClick={() => setIsOpen(false)}></div>
+          <div className="cart-modal-container" onClick={e => e.stopPropagation()}>
+          <div className="cart-modal-header">
+            <h2>🛒 Mi Carrito de Compras</h2>
+            <button className="cart-modal-close-btn" onClick={() => setIsOpen(false)}>×</button>
+          </div>
 
             {showNotification && (
               <div className="notification success">
@@ -167,16 +175,8 @@ export default function CartModalNew() {
               </>
             )}
           </div>
-        </div>
+        </>
       )}
-
-      <Checkout 
-        isOpen={showCheckout} 
-        onClose={() => {
-          setShowCheckout(false);
-          setIsOpen(false);
-        }} 
-      />
     </>
   );
 }

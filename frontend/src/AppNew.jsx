@@ -7,13 +7,14 @@ import Header from './components/Header';
 import ProductList from './components/ProductList';
 import FiltersNew from './components/FiltersNew';
 import ProductModal from './components/ProductModal';
-import Notification from './components/Notification';
+import CheckoutPageSimple from './components/CheckoutPageSimple';
 import './styles.css';
 
 export default function App() {
   const [currentProduct, setCurrentProduct] = useState(null);
   const [modalOpen, setModalOpen] = useState(false);
   const [loadingComplete, setLoadingComplete] = useState(false);
+  const [showCheckout, setShowCheckout] = useState(false);
 
   const openProductModal = (product) => {
     setCurrentProduct(product);
@@ -30,6 +31,14 @@ export default function App() {
     console.log('✅ Aplicación cargada completamente');
   };
 
+  const openCheckout = () => {
+    setShowCheckout(true);
+  };
+
+  const closeCheckout = () => {
+    setShowCheckout(false);
+  };
+
   return (
     <ProductsProvider>
       <CartProvider>
@@ -41,9 +50,9 @@ export default function App() {
             )}
 
             {/* Aplicación principal */}
-            {loadingComplete && (
+            {loadingComplete && !showCheckout && (
               <>
-                <Header />
+                <Header onCheckoutClick={openCheckout} />
                 
                 <main className="main-content">
                   <div className="container">
@@ -67,10 +76,12 @@ export default function App() {
                   open={modalOpen}
                   onClose={closeProductModal}
                 />
-
-                {/* Contenedor de notificaciones */}
-                <Notification />
               </>
+            )}
+
+            {/* Página de Checkout */}
+            {loadingComplete && showCheckout && (
+              <CheckoutPageSimple onClose={closeCheckout} />
             )}
           </div>
         </WishlistProvider>

@@ -56,10 +56,10 @@ export default function ProductCardNew({ product, onOpenModal }) {
   const price = product.price || 0;
   const rating = product.rating?.rate || product.rating || 0;
   const ratingCount = product.rating?.count || 0;
-  const stock = Math.floor(Math.random() * 20) + 5; // Stock aleatorio
-  const isOnSale = Math.random() > 0.7; // 30% de probabilidad de estar en oferta
-  const discount = isOnSale ? Math.floor(Math.random() * 30) + 10 : 0;
-  const originalPrice = isOnSale ? price / (1 - discount / 100) : null;
+  const stock = product.stock || 0; // Stock real de la API
+  const isOnSale = false; // Deshabilitado por ahora
+  const discount = 0;
+  const originalPrice = null;
   
   // Truncar descripción si es muy larga
   const truncatedDescription = description.length > 100 

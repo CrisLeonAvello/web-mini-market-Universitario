@@ -14,7 +14,7 @@ export default function ProductCard({ product, onOpenModal }) {
   const price = product.price || 0;
   const category = product.category || 'Sin categoría';
   const rating = product.rating?.rate || product.rating || 0;
-  const stock = Math.floor(Math.random() * 20) + 5; // Stock aleatorio
+  const stock = product.stock || 0; // Stock real de la API
   const featured = product.featured || false;
   
   // Truncar descripción si es muy larga

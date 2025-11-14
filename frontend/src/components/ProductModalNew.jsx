@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useCart } from '../contexts/CartContext';
 import { useWishlist } from '../contexts/WishlistContext';
 
@@ -8,10 +8,36 @@ export default function ProductModalNew({ product, isOpen, onClose }) {
   const { addToCart } = useCart();
   const { wishlist, addToWishlist, removeFromWishlist } = useWishlist();
 
+  // Usar el stock real del producto de la API
+  const stock = product?.stock || 0;
+
+  // Resetear cantidad cuando se abre el modal
+  useEffect(() => {
+    if (isOpen) {
+      setQuantity(1);
+    }
+  }, [isOpen, product?.id]);
+
+  // Actualizar posición del modal según el scroll
+  useEffect(() => {
+    if (isOpen) {
+      const updateModalPosition = () => {
+        const scrollTop = window.pageYOffset || document.documentElement.scrollTop;
+        document.documentElement.style.setProperty('--scroll-top', `${scrollTop}px`);
+      };
+
+      updateModalPosition();
+      window.addEventListener('scroll', updateModalPosition);
+
+      return () => {
+        window.removeEventListener('scroll', updateModalPosition);
+      };
+    }
+  }, [isOpen]);
+
   if (!isOpen || !product) return null;
 
   const isInWishlist = wishlist.includes(product.id.toString());
-  const stock = Math.floor(Math.random() * 20) + 5;
   const rating = product.rating?.rate || 0;
   const ratingCount = product.rating?.count || 0;
 
@@ -54,20 +80,22 @@ export default function ProductModalNew({ product, isOpen, onClose }) {
 
   return (
     <>
-      <div className="modal-overlay" onClick={onClose}>
-        <div className="modal-content product-modal-content" onClick={e => e.stopPropagation()}>
-          <div className="modal-header">
-            <h2>📦 Detalles del Producto</h2>
-            <button className="close-btn" onClick={onClose}>×</button>
+      {/* Overlay oscuro de fondo */}
+      <div className="product-detail-overlay" onClick={onClose}></div>
+      
+      {/* Modal independiente del producto */}
+      <div className="product-detail-modal">
+        <button className="product-detail-close-btn" onClick={onClose}>
+          ×
+        </button>
+
+        {showNotification && (
+          <div className="product-detail-notification">
+            {showNotification}
           </div>
+        )}
 
-          {showNotification && (
-            <div className="notification success">
-              {showNotification}
-            </div>
-          )}
-
-          <div className="modal-body product-modal-body">
+        <div className="product-detail-content">
             {/* Imagen del producto */}
             <div className="modal-image-section">
               <div className="modal-image-container">
@@ -170,15 +198,15 @@ export default function ProductModalNew({ product, isOpen, onClose }) {
               </div>
 
               {/* Botones de acción */}
-              <div className="modal-actions">
+              <div className="product-detail-actions">
                 <button 
-                  className="modal-btn secondary"
+                  className="product-detail-btn-secondary"
                   onClick={onClose}
                 >
-                  🔙 Seguir viendo
+                  Cancelar
                 </button>
                 <button 
-                  className={`modal-btn primary ${stock === 0 ? 'disabled' : 'animate-glow'}`}
+                  className="product-detail-btn-primary"
                   onClick={handleAddToCart}
                   disabled={stock === 0}
                 >
@@ -187,7 +215,6 @@ export default function ProductModalNew({ product, isOpen, onClose }) {
               </div>
             </div>
           </div>
-        </div>
       </div>
     </>
   );
