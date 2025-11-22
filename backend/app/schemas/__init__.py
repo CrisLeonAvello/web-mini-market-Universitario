@@ -36,6 +36,36 @@ from .user import (
     TokenData
 )
 
+from .perfil import (
+    PerfilUsuarioBase,
+    PerfilUsuarioCreate,
+    PerfilUsuarioUpdate,
+    PerfilUsuarioResponse
+)
+
+from .venta import (
+    VentaBase,
+    VentaCreate,
+    VentaUpdate,
+    VentaResponse,
+    VentaDetalle,
+    EstadoVentaEnum
+)
+
+from .valoracion import (
+    ValoracionBase,
+    ValoracionCreate,
+    ValoracionResponse,
+    ValoracionDetalle,
+    TipoEvaluacionEnum
+)
+
+from .favorito import (
+    FavoritoCreate,
+    FavoritoResponse,
+    FavoritoDetalle
+)
+
 __all__ = [
     # Product schemas
     "ProductBase",
@@ -57,4 +87,26 @@ __all__ = [
     "UserLogin",
     "Token",
     "TokenData",
+    # Perfil schemas
+    "PerfilUsuarioBase",
+    "PerfilUsuarioCreate",
+    "PerfilUsuarioUpdate",
+    "PerfilUsuarioResponse",
+    # Venta schemas
+    "VentaBase",
+    "VentaCreate",
+    "VentaUpdate",
+    "VentaResponse",
+    "VentaDetalle",
+    "EstadoVentaEnum",
+    # Valoracion schemas
+    "ValoracionBase",
+    "ValoracionCreate",
+    "ValoracionResponse",
+    "ValoracionDetalle",
+    "TipoEvaluacionEnum",
+    # Favorito schemas
+    "FavoritoCreate",
+    "FavoritoResponse",
+    "FavoritoDetalle",
 ]

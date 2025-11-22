@@ -1,4 +1,5 @@
 ﻿import React, { useState, useEffect } from "react";
+import { AuthProvider } from "./contexts/AuthContext";
 import { ProductsProvider } from "./contexts/ProductsContext";
 import { CartProvider } from "./contexts/CartContext";
 import { WishlistProvider } from "./contexts/WishlistContext";
@@ -6,6 +7,7 @@ import ProductListNew from "./components/ProductListNew";
 import FiltersNew from "./components/FiltersNew";
 import CartModalNew from "./components/CartModalNew";
 import WishlistModalNew from "./components/WishlistModalNew";
+import UserProfile from "./components/UserProfile";
 import LandingPage from "./components/LandingPage";
 import LoginPage from "./components/LoginPage";
 import ErrorBoundary from "./components/ErrorBoundary";
@@ -17,7 +19,7 @@ import "./landing.css";
 
 function App() {
   const [loading, setLoading] = useState(true);
-  const [currentPage, setCurrentPage] = useState('landing'); // 'landing', 'login', 'store'
+  const [currentPage, setCurrentPage] = useState('landing'); // 'landing', 'login', 'store', 'profile'
   const [user, setUser] = useState(null);
 
   useEffect(() => {
@@ -77,6 +79,11 @@ function App() {
     window.history.pushState({ page: 'landing' }, '', '#landing');
   };
 
+  const handleShowProfile = () => {
+    setCurrentPage('profile');
+    window.history.pushState({ page: 'profile' }, '', '#profile');
+  };
+
   if (loading) {
     return (
       <div style={{
@@ -105,6 +112,39 @@ function App() {
     );
   }
 
+  // Mostrar perfil de usuario
+  if (currentPage === 'profile') {
+    return (
+      <ErrorBoundary>
+        <AuthProvider>
+          <div className="app">
+          <header className="header space-store-header">
+            <div className="logo space-store-logo" onClick={handleBackToLanding} style={{ cursor: 'pointer' }}>
+              <span className="logo-icon">🚀</span>
+              <span className="logo-text">StudiMarket</span>
+            </div>
+            <div className="nav-buttons space-nav-buttons">
+              <button className="nav-btn space-nav-btn" onClick={handleBackToLanding}>
+                <span className="btn-icon">🏠</span>
+                <span>Inicio</span>
+              </button>
+              <button className="nav-btn space-nav-btn" onClick={handleEnterStore}>
+                <span className="btn-icon">🛍️</span>
+                <span>Tienda</span>
+              </button>
+              <button className="nav-btn space-nav-btn" onClick={handleLogout}>
+                <span className="btn-icon">🚪</span>
+                <span>Salir</span>
+              </button>
+            </div>
+          </header>
+          <UserProfile />
+        </div>
+      </AuthProvider>
+    </ErrorBoundary>
+    );
+  }
+
   // Mostrar Landing Page
   if (currentPage === 'landing') {
     return (
@@ -112,6 +152,7 @@ function App() {
         <LandingPage 
           onEnterStore={handleEnterStore}
           onShowLogin={handleShowLogin}
+          onShowProfile={handleShowProfile}
           user={user}
           onLogout={handleLogout}
         />
@@ -122,10 +163,11 @@ function App() {
   // Mostrar Tienda Principal (currentPage === 'store')
   return (
     <ErrorBoundary>
-      <ProductsProvider>
-        <CartProvider>
-          <WishlistProvider>
-            <div className="app space-store">
+      <AuthProvider>
+        <ProductsProvider>
+          <CartProvider>
+            <WishlistProvider>
+              <div className="app space-store">
               {/* Fondo espacial para la tienda */}
               <div className="store-space-bg">
                 <div className="store-nebula store-nebula-1"></div>
@@ -157,10 +199,12 @@ function App() {
                     <span className="btn-icon">🏠</span>
                     <span>Inicio</span>
                   </button>
-                  <button className="nav-btn space-nav-btn">
-                    <span className="btn-icon">📋</span>
-                    <span>Catálogo</span>
-                  </button>
+                  {user && (
+                    <button className="nav-btn space-nav-btn" onClick={handleShowProfile}>
+                      <span className="btn-icon">👤</span>
+                      <span>Perfil</span>
+                    </button>
+                  )}
                   <CartModalNew />
                   <WishlistModalNew />
                 </div>
@@ -185,7 +229,8 @@ function App() {
           </WishlistProvider>
         </CartProvider>
       </ProductsProvider>
-    </ErrorBoundary>
+    </AuthProvider>
+  </ErrorBoundary>
   );
 }
 

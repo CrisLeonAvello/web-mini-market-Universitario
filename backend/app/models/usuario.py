@@ -40,12 +40,14 @@ class Usuario(Base):
     updated_at = Column(DateTime(timezone=True), onupdate=func.now())
     
     # Relaciones ORM
-    carritos = relationship(
-        "Carrito",
-        back_populates="usuario",
-        cascade="all, delete-orphan",  # Borrar usuario → borrar carritos
-        lazy="dynamic"  # No cargar carritos automáticamente (query on-demand)
-    )
+    carritos = relationship("Carrito", back_populates="usuario", cascade="all, delete-orphan", lazy="dynamic")
+    perfil = relationship("PerfilUsuario", back_populates="usuario", uselist=False, cascade="all, delete-orphan")
+    productos_vendidos = relationship("Producto", back_populates="vendedor", lazy="dynamic")
+    compras = relationship("Venta", foreign_keys="Venta.comprador_id", back_populates="comprador", lazy="dynamic")
+    ventas = relationship("Venta", foreign_keys="Venta.vendedor_id", back_populates="vendedor", lazy="dynamic")
+    favoritos = relationship("Favorito", back_populates="usuario", cascade="all, delete-orphan")
+    valoraciones_dadas = relationship("Valoracion", foreign_keys="Valoracion.evaluador_id", back_populates="evaluador", lazy="dynamic")
+    valoraciones_recibidas = relationship("Valoracion", foreign_keys="Valoracion.evaluado_id", back_populates="evaluado", lazy="dynamic")
     
     def __repr__(self):
         return f"<Usuario(id={self.id_usuario}, email='{self.email}')>"

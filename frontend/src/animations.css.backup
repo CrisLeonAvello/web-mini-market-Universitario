@@ -1,0 +1,8 @@
+/* ANIMACIONES DESACTIVADAS - OPTIMIZACIÓN DE RENDIMIENTO */
+
+/* Transiciones globales desactivadas */
+* { transition: none !important; animation: none !important; }
+
+/* Solo hover mínimo */
+button:hover, .btn:hover { opacity: 0.9; }
+a:hover { opacity: 0.8; }

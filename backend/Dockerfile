@@ -28,11 +28,18 @@ RUN pip install --no-cache-dir pymysql cryptography
 # Copiar código fuente
 COPY . .
 
-# Dar permisos de ejecución al script de inicialización
-RUN chmod +x init_db.sh
-
 # Exponer puerto de FastAPI
 EXPOSE 8000
 
-# Usar el script de inicialización que ejecuta migraciones y seed
-CMD ["./init_db.sh"]
+# Script de inicialización inline para evitar problemas de line endings
+CMD ["sh", "-c", "\
+    echo '🚀 Iniciando configuración de base de datos...' && \
+    echo '⏳ Esperando a que MySQL esté listo...' && \
+    sleep 10 && \
+    echo '📊 Ejecutando migraciones de Alembic...' && \
+    alembic upgrade head && \
+    echo '🔍 Verificando datos existentes...' && \
+    python -c 'from app.database import SessionLocal; from app.models.producto import Producto; db = SessionLocal(); count = db.query(Producto).count(); db.close(); exit(0 if count > 0 else 1)' || python seed_data.py && \
+    echo '🎉 Inicialización completada. Iniciando servidor...' && \
+    uvicorn app.main:app --host 0.0.0.0 --port 8000 --reload\
+    "]

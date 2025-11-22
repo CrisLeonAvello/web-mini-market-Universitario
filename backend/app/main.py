@@ -93,6 +93,10 @@ async def health_check():
 from app.routes.examples import router_cart, router_users
 from app.routes.productos import router as router_productos_real
 from app.routes.auth import router as router_auth
+from app.routes.users import router as router_users_real
+from app.routes.ventas import router as router_ventas
+from app.routes.valoraciones import router as router_valoraciones
+from app.routes.favoritos import router as router_favoritos
 
 # 🔐 Autenticación JWT
 app.include_router(
@@ -162,5 +166,49 @@ app.include_router(
     tags=["👥 Users (Examples)"],
     responses={
         404: {"description": "User not found"}
+    }
+)
+
+# 👤 Perfiles y Usuarios Reales
+app.include_router(
+    router_users_real,
+    prefix="/api/users",
+    tags=["👤 Usuarios & Perfiles"],
+    responses={
+        401: {"description": "No autorizado"},
+        404: {"description": "Usuario no encontrado"}
+    }
+)
+
+# 💰 Ventas y Transacciones
+app.include_router(
+    router_ventas,
+    prefix="/api/ventas",
+    tags=["💰 Ventas"],
+    responses={
+        401: {"description": "No autorizado"},
+        404: {"description": "Venta no encontrada"}
+    }
+)
+
+# ⭐ Valoraciones y Calificaciones
+app.include_router(
+    router_valoraciones,
+    prefix="/api/valoraciones",
+    tags=["⭐ Valoraciones"],
+    responses={
+        401: {"description": "No autorizado"},
+        404: {"description": "Valoración no encontrada"}
+    }
+)
+
+# ❤️ Favoritos
+app.include_router(
+    router_favoritos,
+    prefix="/api/favoritos",
+    tags=["❤️ Favoritos"],
+    responses={
+        401: {"description": "No autorizado"},
+        404: {"description": "Favorito no encontrado"}
     }
 )

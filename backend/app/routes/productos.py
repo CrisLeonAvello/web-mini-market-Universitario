@@ -1,15 +1,4 @@
 """
-Rutas reales para productos que consultan la base de datos
-"""
-
-from fastapi import APIRouter, HTTPException, status, Depends, Query
-from sqlalchemy.orm import Session
-from typing import List, Optional
-from app.database import get_db
-from app.models.producto import Producto
-from app.schemas.product import ProductResponse, ProductList
-
-"""
 🛍️ Rutas de Productos
 
 Este módulo maneja todas las operaciones relacionadas con productos:
@@ -17,14 +6,17 @@ Este módulo maneja todas las operaciones relacionadas con productos:
 - Búsqueda por categoría y precio
 - Detalles de productos individuales
 - Gestión de stock e inventario
+- Publicación y edición de productos (vendedores)
 """
 
 from fastapi import APIRouter, HTTPException, status, Depends, Query
 from sqlalchemy.orm import Session
 from typing import List, Optional
 from app.database import get_db
-from app.models.producto import Producto
+from app.models.producto import Producto, EstadoProducto, CondicionProducto
+from app.models.usuario import Usuario
 from app.schemas.product import ProductResponse, ProductList
+from app.auth import get_current_user
 
 router = APIRouter()
 
@@ -99,8 +91,12 @@ async def list_products(
     - **min_price**: Filtro de precio mínimo (opcional)
     - **max_price**: Filtro de precio máximo (opcional)
     """
-    # Consulta base
-    query = db.query(Producto).filter(Producto.is_active == True)
+    # Consulta base - solo productos disponibles
+    query = db.query(Producto).filter(
+        Producto.is_active == True,
+        Producto.estado_producto == EstadoProducto.DISPONIBLE,
+        Producto.stock > 0
+    )
     
     # Aplicar filtros
     if category:
@@ -266,4 +262,241 @@ async def get_categories(db: Session = Depends(get_db)):
     
     return {
         "categories": sorted(categories_list)
+    }
+
+
+# ============================================================================
+# 🆕 NUEVOS ENDPOINTS - GESTIÓN DE PRODUCTOS POR VENDEDORES
+# ============================================================================
+
+@router.post(
+    "/",
+    status_code=status.HTTP_201_CREATED,
+    summary="Publicar nuevo producto",
+    description="Crear un nuevo producto para vender. Requiere autenticación."
+)
+async def crear_producto(
+    titulo: str,
+    descripcion: str,
+    precio: int,
+    stock: int,
+    categoria: str,
+    imagen: Optional[str] = None,
+    condicion: str = "nuevo",
+    current_user: Usuario = Depends(get_current_user),
+    db: Session = Depends(get_db)
+):
+    """
+    Publicar un nuevo producto
+    - Requiere autenticación
+    - El vendedor_id se asigna automáticamente
+    """
+    # Validar condición
+    try:
+        condicion_enum = CondicionProducto(condicion.upper())
+    except ValueError:
+        condicion_enum = CondicionProducto.NUEVO
+    
+    nuevo_producto = Producto(
+        titulo=titulo,
+        descripcion=descripcion,
+        precio=precio,
+        stock=stock,
+        categoria=categoria,
+        imagen=imagen,
+        vendedor_id=current_user.id_usuario,
+        estado_producto=EstadoProducto.DISPONIBLE,
+        condicion=condicion_enum,
+        is_active=True
+    )
+    
+    db.add(nuevo_producto)
+    db.commit()
+    db.refresh(nuevo_producto)
+    
+    return {
+        "id": nuevo_producto.id_producto,
+        "title": nuevo_producto.titulo,
+        "price": nuevo_producto.precio,
+        "stock": nuevo_producto.stock,
+        "categoria": nuevo_producto.categoria,
+        "vendedor_id": nuevo_producto.vendedor_id,
+        "estado": nuevo_producto.estado_producto.value,
+        "message": "Producto publicado exitosamente"
+    }
+
+
+@router.put(
+    "/{product_id}",
+    summary="Editar producto",
+    description="Editar un producto existente. Solo el vendedor owner o admin pueden editar."
+)
+async def editar_producto(
+    product_id: int,
+    titulo: Optional[str] = None,
+    descripcion: Optional[str] = None,
+    precio: Optional[int] = None,
+    stock: Optional[int] = None,
+    categoria: Optional[str] = None,
+    imagen: Optional[str] = None,
+    current_user: Usuario = Depends(get_current_user),
+    db: Session = Depends(get_db)
+):
+    """
+    Editar producto existente
+    - Solo el vendedor owner o admin pueden editar
+    """
+    producto = db.query(Producto).filter(Producto.id_producto == product_id).first()
+    
+    if not producto:
+        raise HTTPException(status_code=404, detail="Producto no encontrado")
+    
+    # Verificar permisos
+    if producto.vendedor_id != current_user.id_usuario and not current_user.is_admin:
+        raise HTTPException(
+            status_code=403,
+            detail="No tienes permiso para editar este producto"
+        )
+    
+    # Actualizar campos
+    if titulo is not None:
+        producto.titulo = titulo
+    if descripcion is not None:
+        producto.descripcion = descripcion
+    if precio is not None:
+        producto.precio = precio
+    if stock is not None:
+        producto.stock = stock
+    if categoria is not None:
+        producto.categoria = categoria
+    if imagen is not None:
+        producto.imagen = imagen
+    
+    db.commit()
+    db.refresh(producto)
+    
+    return {
+        "id": producto.id_producto,
+        "title": producto.titulo,
+        "price": producto.precio,
+        "message": "Producto actualizado exitosamente"
+    }
+
+
+@router.delete(
+    "/{product_id}",
+    status_code=status.HTTP_204_NO_CONTENT,
+    summary="Eliminar producto",
+    description="Eliminar (desactivar) un producto. Solo el vendedor owner o admin."
+)
+async def eliminar_producto(
+    product_id: int,
+    current_user: Usuario = Depends(get_current_user),
+    db: Session = Depends(get_db)
+):
+    """
+    Eliminar producto (marca como inactivo)
+    - Solo el vendedor owner o admin
+    """
+    producto = db.query(Producto).filter(Producto.id_producto == product_id).first()
+    
+    if not producto:
+        raise HTTPException(status_code=404, detail="Producto no encontrado")
+    
+    # Verificar permisos
+    if producto.vendedor_id != current_user.id_usuario and not current_user.is_admin:
+        raise HTTPException(
+            status_code=403,
+            detail="No tienes permiso para eliminar este producto"
+        )
+    
+    # Marcar como inactivo en lugar de eliminar físicamente
+    producto.is_active = False
+    producto.estado_producto = EstadoProducto.ELIMINADO
+    
+    db.commit()
+    
+    return None
+
+
+@router.patch(
+    "/{product_id}/pausar",
+    summary="Pausar/Reactivar producto",
+    description="Pausar o reactivar un producto. Solo el vendedor owner."
+)
+async def pausar_producto(
+    product_id: int,
+    current_user: Usuario = Depends(get_current_user),
+    db: Session = Depends(get_db)
+):
+    """
+    Pausar o reactivar un producto
+    - Solo el vendedor owner
+    """
+    producto = db.query(Producto).filter(Producto.id_producto == product_id).first()
+    
+    if not producto:
+        raise HTTPException(status_code=404, detail="Producto no encontrado")
+    
+    # Verificar permisos
+    if producto.vendedor_id != current_user.id_usuario:
+        raise HTTPException(
+            status_code=403,
+            detail="No tienes permiso para pausar este producto"
+        )
+    
+    # Toggle estado
+    if producto.estado_producto == EstadoProducto.DISPONIBLE:
+        producto.estado_producto = EstadoProducto.PAUSADO
+        mensaje = "Producto pausado"
+    else:
+        producto.estado_producto = EstadoProducto.DISPONIBLE
+        mensaje = "Producto reactivado"
+    
+    db.commit()
+    
+    return {
+        "id": producto.id_producto,
+        "estado": producto.estado_producto.value,
+        "message": mensaje
+    }
+
+
+@router.get(
+    "/vendedor/{vendedor_id}",
+    summary="Productos de un vendedor",
+    description="Obtener todos los productos de un vendedor específico (público)"
+)
+async def productos_vendedor(
+    vendedor_id: int,
+    db: Session = Depends(get_db)
+):
+    """
+    Ver productos de un vendedor específico
+    - Público (sin autenticación)
+    - Solo muestra productos disponibles
+    """
+    productos = db.query(Producto).filter(
+        Producto.vendedor_id == vendedor_id,
+        Producto.is_active == True,
+        Producto.estado_producto == EstadoProducto.DISPONIBLE
+    ).all()
+    
+    products_data = []
+    for producto in productos:
+        product_dict = {
+            "id": producto.id_producto,
+            "title": producto.titulo,
+            "price": float(producto.precio),
+            "stock": producto.stock,
+            "categoria": producto.categoria,
+            "imagen": producto.imagen,
+            "condicion": producto.condicion.value
+        }
+        products_data.append(product_dict)
+    
+    return {
+        "vendedor_id": vendedor_id,
+        "total": len(products_data),
+        "productos": products_data
     }
