@@ -18,21 +18,17 @@ export default function ProductModalNew({ product, isOpen, onClose }) {
     }
   }, [isOpen, product?.id]);
 
-  // Actualizar posición del modal según el scroll
+  // Bloquear scroll del body cuando el modal está abierto
   useEffect(() => {
     if (isOpen) {
-      const updateModalPosition = () => {
-        const scrollTop = window.pageYOffset || document.documentElement.scrollTop;
-        document.documentElement.style.setProperty('--scroll-top', `${scrollTop}px`);
-      };
-
-      updateModalPosition();
-      window.addEventListener('scroll', updateModalPosition);
-
-      return () => {
-        window.removeEventListener('scroll', updateModalPosition);
-      };
+      document.body.style.overflow = 'hidden';
+    } else {
+      document.body.style.overflow = 'unset';
     }
+
+    return () => {
+      document.body.style.overflow = 'unset';
+    };
   }, [isOpen]);
 
   if (!isOpen || !product) return null;

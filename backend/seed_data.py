@@ -103,6 +103,7 @@ def seed_productos(db, usuarios):
             "precio": 1299990,
             "stock": 10,
             "categoria": "Electrónicos",
+            "imagen": "https://via.placeholder.com/400x400/1a1a2e/ffffff?text=Laptop+Dell",
             "vendedor_id": vendedor1.id_usuario if vendedor1 else admin.id_usuario,
             "estado_producto": EstadoProducto.DISPONIBLE,
             "condicion": CondicionProducto.NUEVO
@@ -113,6 +114,7 @@ def seed_productos(db, usuarios):
             "precio": 59990,
             "stock": 50,
             "categoria": "Electrónicos",
+            "imagen": "https://via.placeholder.com/400x400/1a1a2e/8a2be2?text=Mouse+Gaming",
             "vendedor_id": vendedor1.id_usuario if vendedor1 else admin.id_usuario,
             "estado_producto": EstadoProducto.DISPONIBLE,
             "condicion": CondicionProducto.NUEVO
@@ -123,6 +125,7 @@ def seed_productos(db, usuarios):
             "precio": 349990,
             "stock": 25,
             "categoria": "Electrónicos",
+            "imagen": "https://via.placeholder.com/400x400/1a1a2e/ff6b35?text=Auriculares",
             "vendedor_id": vendedor2.id_usuario if vendedor2 else admin.id_usuario,
             "estado_producto": EstadoProducto.DISPONIBLE,
             "condicion": CondicionProducto.USADO
@@ -133,6 +136,7 @@ def seed_productos(db, usuarios):
             "precio": 12990,
             "stock": 80,
             "categoria": "Electrónicos",
+            "imagen": "https://via.placeholder.com/400x400/1a1a2e/00bfff?text=Pendrive",
             "vendedor_id": vendedor1.id_usuario if vendedor1 else admin.id_usuario,
             "estado_producto": EstadoProducto.DISPONIBLE,
             "condicion": CondicionProducto.NUEVO
@@ -145,6 +149,7 @@ def seed_productos(db, usuarios):
             "precio": 2990,
             "stock": 200,
             "categoria": "Librería",
+            "imagen": "https://via.placeholder.com/400x400/1a1a2e/32cd32?text=Cuaderno",
             "vendedor_id": vendedor2.id_usuario if vendedor2 else admin.id_usuario,
             "estado_producto": EstadoProducto.DISPONIBLE,
             "condicion": CondicionProducto.NUEVO
@@ -155,6 +160,7 @@ def seed_productos(db, usuarios):
             "precio": 4990,
             "stock": 150,
             "categoria": "Librería",
+            "imagen": "https://via.placeholder.com/400x400/1a1a2e/ffd700?text=Boligrafos",
             "vendedor_id": vendedor2.id_usuario if vendedor2 else admin.id_usuario,
             "estado_producto": EstadoProducto.DISPONIBLE,
             "condicion": CondicionProducto.NUEVO
@@ -165,6 +171,7 @@ def seed_productos(db, usuarios):
             "precio": 34990,
             "stock": 40,
             "categoria": "Librería",
+            "imagen": "https://via.placeholder.com/400x400/1a1a2e/ff1493?text=Mochila",
             "vendedor_id": vendedor1.id_usuario if vendedor1 else admin.id_usuario,
             "estado_producto": EstadoProducto.DISPONIBLE,
             "condicion": CondicionProducto.REACONDICIONADO
@@ -177,6 +184,7 @@ def seed_productos(db, usuarios):
             "precio": 8990,
             "stock": 100,
             "categoria": "Alimentos",
+            "imagen": "https://via.placeholder.com/400x400/1a1a2e/8b4513?text=Cafe",
             "vendedor_id": admin.id_usuario,
             "estado_producto": EstadoProducto.DISPONIBLE,
             "condicion": CondicionProducto.NUEVO
@@ -187,6 +195,7 @@ def seed_productos(db, usuarios):
             "precio": 3490,
             "stock": 120,
             "categoria": "Alimentos",
+            "imagen": "https://via.placeholder.com/400x400/1a1a2e/000000?text=Galletas",
             "vendedor_id": admin.id_usuario,
             "estado_producto": EstadoProducto.DISPONIBLE,
             "condicion": CondicionProducto.NUEVO
@@ -197,6 +206,7 @@ def seed_productos(db, usuarios):
             "precio": 1290,
             "stock": 300,
             "categoria": "Alimentos",
+            "imagen": "https://via.placeholder.com/400x400/1a1a2e/00bfff?text=Agua",
             "vendedor_id": admin.id_usuario,
             "estado_producto": EstadoProducto.DISPONIBLE,
             "condicion": CondicionProducto.NUEVO
@@ -213,11 +223,15 @@ def seed_productos(db, usuarios):
             productos_creados.append(producto)
             print(f"   ✅ Producto creado: {producto.titulo}")
         else:
-            # Actualizar vendedor_id si no lo tiene
+            # Actualizar vendedor_id y otros campos si no los tiene
             if not existing.vendedor_id:
                 existing.vendedor_id = data["vendedor_id"]
                 existing.estado_producto = data["estado_producto"]
                 existing.condicion = data["condicion"]
+            # Actualizar imagen si no la tiene
+            if not existing.imagen and "imagen" in data:
+                existing.imagen = data["imagen"]
+                print(f"   🖼️  Imagen actualizada: {existing.titulo}")
             productos_creados.append(existing)
             print(f"   ⚠️  Producto ya existe: {existing.titulo}")
     

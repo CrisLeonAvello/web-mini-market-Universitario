@@ -8,12 +8,17 @@
   box-sizing: border-box;
 }
 
+html {
+  scroll-behavior: smooth;
+}
+
 .landing-page.space-theme {
   min-height: 100vh;
   background: #0a0a1a;
   color: white;
   font-family: 'Inter', 'Segoe UI', system-ui, sans-serif;
   overflow-x: hidden;
+  overflow-y: auto;
   position: relative;
 }
 
@@ -3319,6 +3324,10 @@
   padding: 8rem 0;
   background: linear-gradient(180deg, #0a0a1a 0%, #1a0a2e 50%, #0a0a1a 100%);
   z-index: 10;
+  display: block !important;
+  visibility: visible !important;
+  opacity: 1 !important;
+  min-height: 500px;
 }
 
 .space-about-content {

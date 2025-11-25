@@ -1,0 +1,258 @@
+﻿import React, { useState, useEffect } from 'react';
+import { Button } from './ui/button';
+import { Card, CardContent } from './ui/card';
+import { ImageWithFallback } from './ui/ImageWithFallback';
+import { Badge } from './Badge';
+
+export default function LandingPage({ onEnterStore, onShowLogin, onShowProfile, user, onLogout }) {
+  const [featuredProducts, setFeaturedProducts] = useState([]);
+  const [loadingProducts, setLoadingProducts] = useState(true);
+  const [currentPage, setCurrentPage] = useState(0);
+  const [isFlipping, setIsFlipping] = useState(false);
+
+  const categories = [
+    { name: 'Tecnología', icon: '💻', items: 250, color: '#3b82f6' },
+    { name: 'Libros', icon: '📚', items: 320, color: '#ec4899' },
+    { name: 'Audio', icon: '🎧', items: 120, color: '#f97316' },
+    { name: 'Accesorios', icon: '🎒', items: 180, color: '#10b981' },
+    { name: 'Snacks', icon: '☕', items: 95, color: '#f59e0b' },
+    { name: 'Papelería', icon: '✏️', items: 150, color: '#a855f7' },
+  ];
+
+  useEffect(() => {
+    const loadFeaturedProducts = async () => {
+      try {
+        const response = await fetch('http://localhost:8000/api/products');
+        const data = await response.json();
+        setFeaturedProducts(data.products.slice(0, 3));
+      } catch (error) {
+        console.error('Error loading products:', error);
+      } finally {
+        setLoadingProducts(false);
+      }
+    };
+    loadFeaturedProducts();
+  }, []);
+
+  useEffect(() => {
+    const timer = setInterval(() => {
+      setIsFlipping(true);
+      setTimeout(() => {
+        setCurrentPage((prev) => (prev + 1) % categories.length);
+        setIsFlipping(false);
+      }, 600);
+    }, 3000);
+    return () => clearInterval(timer);
+  }, []);
+
+  const getBadgeVariant = (index) => {
+    if (index === 0) return 'popular';
+    if (index === 1) return 'nuevo';
+    if (index === 2) return 'trending';
+    return 'default';
+  };
+
+  const getBadgeText = (index) => {
+    if (index === 0) return 'Popular';
+    if (index === 1) return 'Nuevo';
+    if (index === 2) return 'Trending';
+    return '';
+  };
+
+  return (
+    <div style={{ minHeight: '100vh', backgroundColor: '#0a0e27' }}>
+      {/* Header */}
+      <header style={{
+        position: 'sticky',
+        top: 0,
+        zIndex: 50,
+        backgroundColor: '#0a0e27',
+        borderBottom: '1px solid rgba(255, 255, 255, 0.1)'
+      }}>
+        <div style={{
+          maxWidth: '1400px',
+          margin: '0 auto',
+          padding: '1rem 2rem',
+          display: 'flex',
+          alignItems: 'center',
+          justifyContent: 'space-between',
+          gap: '2rem'
+        }}>
+          {/* Logo */}
+          <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
+            <span style={{ fontSize: '1.75rem' }}></span>
+            <div>
+              <h1 style={{ 
+                fontSize: '1.25rem', 
+                fontWeight: '700',
+                background: 'linear-gradient(135deg, #ff6b35 0%, #a855f7 100%)',
+                WebkitBackgroundClip: 'text',
+                WebkitTextFillColor: 'transparent',
+                margin: 0,
+                lineHeight: 1
+              }}>
+                StudiMarket
+              </h1>
+              <p style={{ 
+                fontSize: '0.625rem', 
+                color: '#94a3b8',
+                margin: 0,
+                lineHeight: 1
+              }}>
+                Marketplace Estudiantil
+              </p>
+            </div>
+          </div>
+          
+          {/* Navigation */}
+          <nav style={{ display: 'flex', gap: '2rem', alignItems: 'center' }}>
+            <a href='#productos' style={{ 
+              display: 'flex',
+              alignItems: 'center',
+              gap: '0.5rem',
+              color: 'white', 
+              textDecoration: 'none', 
+              fontSize: '0.875rem', 
+              fontWeight: '500' 
+            }}>
+              <span></span> PRODUCTOS
+            </a>
+            <a href='#categorias' style={{ 
+              display: 'flex',
+              alignItems: 'center',
+              gap: '0.5rem',
+              color: 'white', 
+              textDecoration: 'none', 
+              fontSize: '0.875rem', 
+              fontWeight: '500' 
+            }}>
+              <span></span> CATEGORÍAS
+            </a>
+            <a href='#nosotros' style={{ 
+              display: 'flex',
+              alignItems: 'center',
+              gap: '0.5rem',
+              color: 'white', 
+              textDecoration: 'none', 
+              fontSize: '0.875rem', 
+              fontWeight: '500' 
+            }}>
+              NOSOTROS
+            </a>
+          </nav>
+
+          {/* Search Bar */}
+          <div style={{ flex: 1, maxWidth: '400px' }}>
+            <div style={{
+              display: 'flex',
+              alignItems: 'center',
+              backgroundColor: 'rgba(255, 255, 255, 0.05)',
+              borderRadius: '0.5rem',
+              padding: '0.5rem 1rem',
+              border: '1px solid rgba(255, 255, 255, 0.1)'
+            }}>
+              <span style={{ marginRight: '0.5rem' }}></span>
+              <input
+                type='text'
+                placeholder='Buscar productos...'
+                style={{
+                  backgroundColor: 'transparent',
+                  border: 'none',
+                  outline: 'none',
+                  color: 'white',
+                  width: '100%',
+                  fontSize: '0.875rem'
+                }}
+              />
+            </div>
+          </div>
+
+          {/* Auth Buttons */}
+          <div style={{ display: 'flex', gap: '0.5rem', alignItems: 'center' }}>
+            {!user ? (
+              <Button 
+                onClick={onShowLogin}
+                style={{
+                  backgroundColor: '#ff6b35',
+                  color: 'white',
+                  border: 'none',
+                  display: 'flex',
+                  alignItems: 'center',
+                  gap: '0.5rem'
+                }}
+              >
+                <span></span> INICIAR SESIÓN
+              </Button>
+            ) : (
+              <>
+                <span style={{ fontSize: '0.875rem', color: '#94a3b8' }}>
+                  Hola, {user?.name || 'Usuario'}
+                </span>
+                <Button variant='outline' onClick={onShowProfile}>Mi Perfil</Button>
+                <Button variant='ghost' onClick={onLogout}>Salir</Button>
+              </>
+            )}
+          </div>
+        </div>
+      </header>
+
+      {/* Hero Section with Book Animation */}
+      <section style={{ padding: '3rem 2rem', position: 'relative' }}>
+        <div style={{ maxWidth: '1400px', margin: '0 auto' }}>
+          {/* Badge */}
+          <div style={{ marginBottom: '2rem' }}>
+            <span style={{
+              display: 'inline-flex',
+              alignItems: 'center',
+              gap: '0.5rem',
+              padding: '0.5rem 1rem',
+              backgroundColor: 'rgba(168, 85, 247, 0.2)',
+              border: '1px solid rgba(168, 85, 247, 0.3)',
+              borderRadius: '9999px',
+              color: '#a855f7',
+              fontSize: '0.875rem',
+              fontWeight: '600'
+            }}>
+               ESTUDIANTES
+            </span>
+          </div>
+
+          <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '4rem', alignItems: 'center' }}>
+            {/* Left Content */}
+            <div>
+              <h1 style={{
+                fontSize: '3.5rem',
+                fontWeight: '700',
+                lineHeight: '1.1',
+                marginBottom: '1.5rem'
+              }}>
+                <span style={{ color: 'white' }}>Descubre el mejor</span>
+                <br />
+                <span style={{ 
+                  background: 'linear-gradient(135deg, #ff6b35 0%, #f97316 100%)',
+                  WebkitBackgroundClip: 'text',
+                  WebkitTextFillColor: 'transparent'
+                }}>
+                  marketplace
+                </span>
+                <br />
+                <span style={{ 
+                  background: 'linear-gradient(135deg, #a855f7 0%, #ec4899 100%)',
+                  WebkitBackgroundClip: 'text',
+                  WebkitTextFillColor: 'transparent'
+                }}>
+                  estudiantil
+                </span>
+              </h1>
+              <p style={{
+                fontSize: '1.125rem',
+                color: '#94a3b8',
+                marginBottom: '2rem',
+                lineHeight: '1.6'
+              }}>
+                Encuentra todo lo que necesitas para tu vida estudiantil. Productos de calidad, tecnología, libros y más.
+              </p>
+            </div>
+
+            {/* Right - Book Animation */}
+            <div style={{

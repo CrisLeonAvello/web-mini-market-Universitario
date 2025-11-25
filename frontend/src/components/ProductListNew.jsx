@@ -26,17 +26,17 @@ export default function ProductListNew(){
   
   if (loading) {
     return (
-      <div className="loading-message animate-fade-in" style={{ padding: '20px', textAlign: 'center' }}>
+      <div className="loading-message animate-fade-in">
         <h3>🔄 Cargando productos...</h3>
         <p>Obteniendo datos desde la API...</p>
-        <div className="loading-skeleton" style={{ height: '200px', borderRadius: '8px', marginTop: '1rem' }}></div>
+        <div className="loading-skeleton"></div>
       </div>
     )
   }
   
   if (error) {
     return (
-      <div className="error-message animate-shake" style={{ padding: '20px', textAlign: 'center', color: 'red' }}>
+      <div className="error-message animate-shake">
         <h3>❌ Error al cargar productos</h3>
         <p>{error}</p>
         <button className="btn-primary" onClick={() => window.location.reload()}>
@@ -48,8 +48,8 @@ export default function ProductListNew(){
   
   if(!filteredProducts || filteredProducts.length === 0) {
     return (
-      <div className="empty-products animate-fade-in" style={{ padding: '40px', textAlign: 'center' }}>
-        <div style={{ fontSize: '4rem', marginBottom: '1rem' }}>📦</div>
+      <div className="empty-products animate-fade-in">
+        <div className="empty-products-icon">📦</div>
         <h3>No se encontraron productos</h3>
         <p>Intenta ajustar los filtros o recarga la página.</p>
         <button className="btn-primary" onClick={() => window.location.reload()}>
@@ -67,16 +67,11 @@ export default function ProductListNew(){
         {filteredProducts.map((product, index) => {
           console.log('🏷️ Renderizando producto:', product.id, product.title)
           return (
-            <div 
-              key={product.id} 
-              className="animate-fade-in"
-              style={{ animationDelay: `${index * 0.1}s` }}
-            >
-              <ProductCardNew 
-                product={product}
-                onOpenModal={handleOpenModal}
-              />
-            </div>
+            <ProductCardNew 
+              key={product.id}
+              product={product}
+              onOpenModal={handleOpenModal}
+            />
           )
         })}
       </div>

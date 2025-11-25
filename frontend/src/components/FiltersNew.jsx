@@ -57,33 +57,6 @@ export default function Filters() {
     });
   };
 
-  const handleRatingClick = (rating) => {
-    // Si haces clic en la misma estrella, desactiva el filtro
-    // Si haces clic en una estrella diferente, actualiza el rating
-    const newRating = filters.minRating === rating ? 0 : rating;
-    updateFilters({ minRating: newRating });
-    console.log(`⭐ Filtro de rating: ${newRating} estrellas`);
-  };
-
-  const renderStars = () => {
-    return [1, 2, 3, 4, 5].map(rating => (
-      <span 
-        key={rating}
-        className={`star ${rating <= filters.minRating ? 'active' : ''}`}
-        data-rating={rating}
-        onClick={() => handleRatingClick(rating)}
-        title={`${rating} estrella${rating > 1 ? 's' : ''}`}
-        style={{
-          color: rating <= filters.minRating ? '#ffd700' : 'rgba(255, 215, 0, 0.3)',
-          cursor: 'pointer',
-          fontSize: '1.5rem',
-          transition: 'all 0.3s ease'
-        }}
-      >
-        ★
-      </span>
-    ));
-  };
 
   const handleResetFilters = () => {
     resetFilters();
@@ -98,55 +71,9 @@ export default function Filters() {
   };
 
   return (
-    <aside className="filters">
+    <aside className="filters space-filters">
       <div className="filters-header">
         <h3>Filtros</h3>
-        <p>Encuentra lo que buscas</p>
-      </div>
-      
-      <div className="filter-group">
-        <button 
-          className="reset-filters-btn reset-filters-btn-wide" 
-          onClick={handleResetFilters}
-          title="Resetear todos los filtros"
-        >
-          Limpiar
-        </button>
-      </div>
-
-      {/* Filtro por categoría */}
-      <div className="filter-group">
-        <h4>Categoría</h4>
-        <select 
-          className="filter-select" 
-          value={filters.category} 
-          onChange={handleCategoryChange}
-        >
-          <option value="">Todas las categorías</option>
-          {/* Categorías de la API */}
-          {apiCategories.map(category => (
-            <option key={category.id || category.value} value={category.value || category.id}>
-              {category.name}
-            </option>
-          ))}
-          {/* Categorías locales como fallback */}
-          {localCategories.map(category => (
-            <option key={category} value={category}>
-              {category}
-            </option>
-          ))}
-        </select>
-      </div>
-
-      {/* Filtro de búsqueda */}
-      <div className="filter-group">
-        <h4>Buscar</h4>
-        <input 
-          className="search-input" 
-          placeholder="Buscar productos..." 
-          value={filters.search} 
-          onChange={handleSearchChange}
-        />
       </div>
 
       {/* Filtro de precio */}
@@ -158,7 +85,6 @@ export default function Filters() {
         >
           Rango actual: ${filters.minPrice.toLocaleString()} - ${filters.maxPrice.toLocaleString()}
         </div>
-        
         <div className="price-range">
           <div className="price-inputs">
             <div className="price-input-group">
@@ -174,7 +100,6 @@ export default function Filters() {
                 placeholder="0"
               />
             </div>
-            
             <div className="price-input-group">
               <label htmlFor="max-price">Precio máximo:</label>
               <input 
@@ -188,7 +113,6 @@ export default function Filters() {
               />
             </div>
           </div>
-          
           <div className="price-actions">
             <button 
               id="apply-price-filter" 
@@ -210,24 +134,7 @@ export default function Filters() {
         </div>
       </div>
 
-      {/* Filtro de rating */}
-      <div className="filter-group">
-        <h4 id="rating-label">
-          Rating mínimo: {filters.minRating > 0 ? `${filters.minRating} estrellas` : 'Sin filtro'}
-        </h4>
-        <div className="rating-stars" id="rating-filter">
-          {renderStars()}
-        </div>
-        {filters.minRating > 0 && (
-          <button 
-            className="clear-rating-btn"
-            onClick={() => updateFilters({ minRating: 0 })}
-            title="Limpiar filtro de rating"
-          >
-            Limpiar rating
-          </button>
-        )}
-      </div>
+      {/* Filtro de rating eliminado */}
 
       {/* Resumen de filtros activos */}
       <div className="filter-summary">
@@ -258,6 +165,17 @@ export default function Filters() {
             </span>
           )}
         </div>
+      </div>
+
+      {/* Botón Limpiar al final */}
+      <div className="filter-group">
+        <button 
+          className="reset-filters-btn reset-filters-btn-wide" 
+          onClick={handleResetFilters}
+          title="Resetear todos los filtros"
+        >
+          Limpiar
+        </button>
       </div>
     </aside>
   );

@@ -253,3 +253,76 @@ export async function getTransformedCategories() {
     return [];
   }
 }
+
+// ============================================================================
+// GESTIÓN DE PRODUCTOS DEL USUARIO (VENDEDOR)
+// ============================================================================
+
+/**
+ * Obtiene los productos del usuario actual (sus publicaciones)
+ */
+export async function getMyProducts() {
+  return apiRequest('/productos/mis-productos');
+}
+
+/**
+ * Crea un nuevo producto para vender
+ */
+export async function createProduct(productData) {
+  const formData = new URLSearchParams();
+  formData.append('titulo', productData.titulo);
+  formData.append('descripcion', productData.descripcion);
+  formData.append('precio', productData.precio);
+  formData.append('stock', productData.stock);
+  formData.append('categoria', productData.categoria);
+  if (productData.imagen) formData.append('imagen', productData.imagen);
+  formData.append('condicion', productData.condicion || 'nuevo');
+
+  return apiRequest('/productos/', {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/x-www-form-urlencoded',
+    },
+    body: formData.toString(),
+  });
+}
+
+/**
+ * Actualiza un producto existente
+ */
+export async function updateProduct(productId, productData) {
+  const formData = new URLSearchParams();
+  if (productData.titulo) formData.append('titulo', productData.titulo);
+  if (productData.descripcion) formData.append('descripcion', productData.descripcion);
+  if (productData.precio) formData.append('precio', productData.precio);
+  if (productData.stock !== undefined) formData.append('stock', productData.stock);
+  if (productData.categoria) formData.append('categoria', productData.categoria);
+  if (productData.imagen) formData.append('imagen', productData.imagen);
+
+  return apiRequest(`/productos/${productId}`, {
+    method: 'PUT',
+    headers: {
+      'Content-Type': 'application/x-www-form-urlencoded',
+    },
+    body: formData.toString(),
+  });
+}
+
+/**
+ * Elimina (desactiva) un producto
+ */
+export async function deleteProduct(productId) {
+  return apiRequest(`/productos/${productId}`, {
+    method: 'DELETE',
+  });
+}
+
+/**
+ * Pausa o reactiva un producto
+ */
+export async function toggleProductStatus(productId) {
+  return apiRequest(`/productos/${productId}/pausar`, {
+    method: 'PATCH',
+  });
+}
+

@@ -463,6 +463,44 @@ async def pausar_producto(
 
 
 @router.get(
+    "/mis-productos",
+    summary="Mis productos",
+    description="Obtener todos los productos del usuario autenticado"
+)
+async def mis_productos(
+    current_user: Usuario = Depends(get_current_user),
+    db: Session = Depends(get_db)
+):
+    """
+    Ver mis productos como vendedor
+    - Requiere autenticación
+    - Muestra todos los productos (disponibles, pausados, etc.)
+    """
+    productos = db.query(Producto).filter(
+        Producto.vendedor_id == current_user.id_usuario,
+        Producto.is_active == True
+    ).order_by(Producto.created_at.desc()).all()
+    
+    products_data = []
+    for producto in productos:
+        product_dict = {
+            "id": producto.id_producto,
+            "title": producto.titulo,
+            "description": producto.descripcion,
+            "price": float(producto.precio),
+            "stock": producto.stock,
+            "categoria": producto.categoria,
+            "image": producto.imagen,
+            "condicion": producto.condicion.value,
+            "estado": producto.estado_producto.value,
+            "created_at": producto.created_at.isoformat() if producto.created_at else None
+        }
+        products_data.append(product_dict)
+    
+    return products_data
+
+
+@router.get(
     "/vendedor/{vendedor_id}",
     summary="Productos de un vendedor",
     description="Obtener todos los productos de un vendedor específico (público)"

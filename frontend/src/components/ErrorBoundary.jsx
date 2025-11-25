@@ -20,7 +20,8 @@ class ErrorBoundary extends React.Component {
   }
 
   render() {
-    if (this.state.hasError) {
+    const { error, errorInfo } = this.state;
+    if (error) {
       return (
         <div style={{
           padding: '2rem',
@@ -51,7 +52,7 @@ class ErrorBoundary extends React.Component {
             }}>
               {this.state.error && this.state.error.toString()}
               <br />
-              {this.state.errorInfo.componentStack}
+              {this.state.errorInfo && this.state.errorInfo.componentStack}
             </pre>
           </details>
           <button 
