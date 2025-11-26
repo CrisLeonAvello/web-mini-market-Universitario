@@ -111,6 +111,42 @@ class AuthService {
     }
   }
 
+  // Iniciar sesión con Google
+  async googleLogin(idToken) {
+    try {
+      const response = await fetch(`${API_URL}/auth/google`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ id_token: idToken }),
+      });
+
+      if (!response.ok) {
+        const errorData = await response.json();
+        throw new Error(errorData.detail || 'Error al iniciar sesión con Google');
+      }
+
+      const data = await response.json();
+      
+      // Guardar token
+      this.setToken(data.access_token);
+      
+      // Obtener y guardar información del usuario
+      try {
+        const userInfo = await this.getCurrentUser();
+        this.setUser(userInfo);
+        return { ...data, user: userInfo };
+      } catch (userError) {
+        console.warn('No se pudo obtener información del usuario:', userError);
+        return data;
+      }
+    } catch (error) {
+      console.error('Error en login con Google:', error);
+      throw error;
+    }
+  }
+
   // Obtener información del usuario actual
   async getCurrentUser() {
     try {

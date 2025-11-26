@@ -11,23 +11,40 @@ console.log('  - API_BASE_URL:', API_BASE_URL);
 console.log('  - Environment mode:', import.meta.env.MODE);
 
 /**
+ * Helper para obtener el token de autenticación
+ */
+function getAuthToken() {
+  return localStorage.getItem('authToken');
+}
+
+/**
  * Helper para hacer requests HTTP
  */
 async function apiRequest(endpoint, options = {}) {
   try {
     const url = `${API_BASE_URL}${endpoint}`;
+    const token = getAuthToken();
+    
+    const headers = {
+      'Content-Type': 'application/json',
+      ...options.headers,
+    };
+    
+    // Agregar token de autenticación si existe
+    if (token) {
+      headers['Authorization'] = `Bearer ${token}`;
+    }
+    
     console.log('🌐 API Request:', {
       endpoint,
       url,
       API_BASE_URL,
+      hasToken: !!token,
       options
     });
     
     const response = await fetch(url, {
-      headers: {
-        'Content-Type': 'application/json',
-        ...options.headers,
-      },
+      headers,
       ...options,
     });
 
@@ -269,6 +286,7 @@ export async function getMyProducts() {
  * Crea un nuevo producto para vender
  */
 export async function createProduct(productData) {
+  const token = getAuthToken();
   const formData = new URLSearchParams();
   formData.append('titulo', productData.titulo);
   formData.append('descripcion', productData.descripcion);
@@ -278,11 +296,17 @@ export async function createProduct(productData) {
   if (productData.imagen) formData.append('imagen', productData.imagen);
   formData.append('condicion', productData.condicion || 'nuevo');
 
+  const headers = {
+    'Content-Type': 'application/x-www-form-urlencoded',
+  };
+  
+  if (token) {
+    headers['Authorization'] = `Bearer ${token}`;
+  }
+
   return apiRequest('/productos/', {
     method: 'POST',
-    headers: {
-      'Content-Type': 'application/x-www-form-urlencoded',
-    },
+    headers,
     body: formData.toString(),
   });
 }
@@ -291,6 +315,7 @@ export async function createProduct(productData) {
  * Actualiza un producto existente
  */
 export async function updateProduct(productId, productData) {
+  const token = getAuthToken();
   const formData = new URLSearchParams();
   if (productData.titulo) formData.append('titulo', productData.titulo);
   if (productData.descripcion) formData.append('descripcion', productData.descripcion);
@@ -299,11 +324,17 @@ export async function updateProduct(productId, productData) {
   if (productData.categoria) formData.append('categoria', productData.categoria);
   if (productData.imagen) formData.append('imagen', productData.imagen);
 
+  const headers = {
+    'Content-Type': 'application/x-www-form-urlencoded',
+  };
+  
+  if (token) {
+    headers['Authorization'] = `Bearer ${token}`;
+  }
+
   return apiRequest(`/productos/${productId}`, {
     method: 'PUT',
-    headers: {
-      'Content-Type': 'application/x-www-form-urlencoded',
-    },
+    headers,
     body: formData.toString(),
   });
 }

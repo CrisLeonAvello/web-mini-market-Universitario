@@ -97,6 +97,7 @@ from app.routes.users import router as router_users_real
 from app.routes.ventas import router as router_ventas
 from app.routes.valoraciones import router as router_valoraciones
 from app.routes.favoritos import router as router_favoritos
+from app.routes.carrito import router as router_carrito_real
 
 # 🔐 Autenticación JWT
 app.include_router(
@@ -131,21 +132,24 @@ app.include_router(
     }
 )
 
-# 🛒 Carrito de Compras (Ejemplos)
+# 🛒 Carrito de Compras (Real con autenticación)
 app.include_router(
-    router_cart, 
+    router_carrito_real, 
     prefix="/api/carrito", 
-    tags=["🛒 Carrito (Ejemplos)"],
+    tags=["🛒 Carrito de Compras"],
     responses={
+        401: {"description": "No autorizado"},
         404: {"description": "Carrito no encontrado"}
     }
 )
 
+# 🛒 Cart (English - Real with authentication)
 app.include_router(
-    router_cart, 
+    router_carrito_real, 
     prefix="/api/cart", 
-    tags=["🛒 Cart (Examples)"],
+    tags=["🛒 Shopping Cart"],
     responses={
+        401: {"description": "Unauthorized"},
         404: {"description": "Cart not found"}
     }
 )

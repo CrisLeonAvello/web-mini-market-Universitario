@@ -1,0 +1,71 @@
+{
+  "expo": {
+    "name": "StudiMarket",
+    "slug": "studimarket",
+    "version": "1.0.0",
+    "orientation": "portrait",
+    "icon": "./assets/icon.png",
+    "userInterfaceStyle": "light",
+    "newArchEnabled": true,
+    "owner": "tu-usuario-expo",
+    "scheme": "studimarket",
+    "splash": {
+      "image": "./assets/splash-icon.png",
+      "resizeMode": "contain",
+      "backgroundColor": "#ffffff"
+    },
+    "ios": {
+      "bundleIdentifier": "com.studimarket.app",
+      "buildNumber": "1.0.0",
+      "supportsTablet": true,
+      "infoPlist": {
+        "NSPhotoLibraryUsageDescription": "StudiMarket necesita acceso a tus fotos para que puedas publicar imágenes de tus productos",
+        "NSCameraUsageDescription": "StudiMarket necesita acceso a tu cámara para que puedas tomar fotos de tus productos"
+      }
+    },
+    "android": {
+      "package": "com.studimarket.app",
+      "versionCode": 1,
+      "adaptiveIcon": {
+        "foregroundImage": "./assets/adaptive-icon.png",
+        "backgroundColor": "#a855f7"
+      },
+      "edgeToEdgeEnabled": true,
+      "predictiveBackGestureEnabled": false,
+      "permissions": [
+        "android.permission.CAMERA",
+        "android.permission.READ_EXTERNAL_STORAGE",
+        "android.permission.WRITE_EXTERNAL_STORAGE"
+      ]
+    },
+    "web": {
+      "favicon": "./assets/favicon.png",
+      "bundler": "metro",
+      "output": "single",
+      "index": "./web/index.html",
+      "name": "StudiMarket - Marketplace Estudiantil",
+      "shortName": "StudiMarket",
+      "description": "Marketplace Estudiantil - Compra y vende productos universitarios entre estudiantes",
+      "themeColor": "#a855f7",
+      "backgroundColor": "#0a0e27",
+      "display": "standalone",
+      "orientation": "any",
+      "startUrl": "/",
+      "scope": "/",
+      "lang": "es-CL",
+      "dir": "ltr",
+      "preferRelatedApplications": false,
+      "categories": ["shopping", "education"],
+      "screenshots": []
+    },
+    "plugins": [
+      [
+        "expo-image-picker",
+        {
+          "photosPermission": "StudiMarket necesita acceso a tus fotos para publicar productos",
+          "cameraPermission": "StudiMarket necesita acceso a la cámara para tomar fotos de productos"
+        }
+      ]
+    ]
+  }
+}

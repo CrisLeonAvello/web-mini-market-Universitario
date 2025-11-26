@@ -9,7 +9,7 @@ Este módulo maneja todas las operaciones relacionadas con productos:
 - Publicación y edición de productos (vendedores)
 """
 
-from fastapi import APIRouter, HTTPException, status, Depends, Query
+from fastapi import APIRouter, HTTPException, status, Depends, Query, Form
 from sqlalchemy.orm import Session
 from typing import List, Optional
 from app.database import get_db
@@ -156,6 +156,64 @@ async def list_products(
     }
 
 
+# ============================================================================
+# RUTAS ESPECÍFICAS - DEBEN IR ANTES DE /{product_id}
+# ============================================================================
+
+@router.get(
+    "/mis-productos",
+    summary="Mis productos",
+    description="Obtener todos los productos del usuario autenticado"
+)
+async def mis_productos(
+    current_user: Usuario = Depends(get_current_user),
+    db: Session = Depends(get_db)
+):
+    """
+    Ver mis productos como vendedor
+    - Requiere autenticación
+    - Muestra todos los productos (disponibles, pausados, etc.)
+    """
+    productos = db.query(Producto).filter(
+        Producto.vendedor_id == current_user.id_usuario,
+        Producto.is_active == True
+    ).order_by(Producto.created_at.desc()).all()
+    
+    products_data = []
+    for producto in productos:
+        product_dict = {
+            "id": producto.id_producto,
+            "title": producto.titulo,
+            "description": producto.descripcion,
+            "price": float(producto.precio),
+            "stock": producto.stock,
+            "categoria": producto.categoria,
+            "image": producto.imagen,
+            "condicion": producto.condicion.value,
+            "estado": producto.estado_producto.value,
+            "created_at": producto.created_at.isoformat() if producto.created_at else None
+        }
+        products_data.append(product_dict)
+    
+    return products_data
+
+
+@router.get("/categorias/list")
+async def get_categories(db: Session = Depends(get_db)):
+    """
+    Obtener todas las categorías disponibles
+    """
+    categorias = db.query(Producto.categoria).filter(
+        Producto.is_active == True
+    ).distinct().all()
+    
+    categories_list = [cat[0] for cat in categorias if cat[0]]
+    
+    return {
+        "categories": sorted(categories_list)
+    }
+
+
 @router.get(
     "/{product_id}", 
     response_model=dict,
@@ -249,22 +307,6 @@ async def get_product(
     }
 
 
-@router.get("/categorias/list")
-async def get_categories(db: Session = Depends(get_db)):
-    """
-    Obtener todas las categorías disponibles
-    """
-    categorias = db.query(Producto.categoria).filter(
-        Producto.is_active == True
-    ).distinct().all()
-    
-    categories_list = [cat[0] for cat in categorias if cat[0]]
-    
-    return {
-        "categories": sorted(categories_list)
-    }
-
-
 # ============================================================================
 # 🆕 NUEVOS ENDPOINTS - GESTIÓN DE PRODUCTOS POR VENDEDORES
 # ============================================================================
@@ -276,13 +318,13 @@ async def get_categories(db: Session = Depends(get_db)):
     description="Crear un nuevo producto para vender. Requiere autenticación."
 )
 async def crear_producto(
-    titulo: str,
-    descripcion: str,
-    precio: int,
-    stock: int,
-    categoria: str,
-    imagen: Optional[str] = None,
-    condicion: str = "nuevo",
+    titulo: str = Form(...),
+    descripcion: str = Form(...),
+    precio: int = Form(...),
+    stock: int = Form(...),
+    categoria: str = Form(...),
+    imagen: Optional[str] = Form(None),
+    condicion: str = Form("nuevo"),
     current_user: Usuario = Depends(get_current_user),
     db: Session = Depends(get_db)
 ):
@@ -333,12 +375,12 @@ async def crear_producto(
 )
 async def editar_producto(
     product_id: int,
-    titulo: Optional[str] = None,
-    descripcion: Optional[str] = None,
-    precio: Optional[int] = None,
-    stock: Optional[int] = None,
-    categoria: Optional[str] = None,
-    imagen: Optional[str] = None,
+    titulo: Optional[str] = Form(None),
+    descripcion: Optional[str] = Form(None),
+    precio: Optional[int] = Form(None),
+    stock: Optional[int] = Form(None),
+    categoria: Optional[str] = Form(None),
+    imagen: Optional[str] = Form(None),
     current_user: Usuario = Depends(get_current_user),
     db: Session = Depends(get_db)
 ):
@@ -460,44 +502,6 @@ async def pausar_producto(
         "estado": producto.estado_producto.value,
         "message": mensaje
     }
-
-
-@router.get(
-    "/mis-productos",
-    summary="Mis productos",
-    description="Obtener todos los productos del usuario autenticado"
-)
-async def mis_productos(
-    current_user: Usuario = Depends(get_current_user),
-    db: Session = Depends(get_db)
-):
-    """
-    Ver mis productos como vendedor
-    - Requiere autenticación
-    - Muestra todos los productos (disponibles, pausados, etc.)
-    """
-    productos = db.query(Producto).filter(
-        Producto.vendedor_id == current_user.id_usuario,
-        Producto.is_active == True
-    ).order_by(Producto.created_at.desc()).all()
-    
-    products_data = []
-    for producto in productos:
-        product_dict = {
-            "id": producto.id_producto,
-            "title": producto.titulo,
-            "description": producto.descripcion,
-            "price": float(producto.precio),
-            "stock": producto.stock,
-            "categoria": producto.categoria,
-            "image": producto.imagen,
-            "condicion": producto.condicion.value,
-            "estado": producto.estado_producto.value,
-            "created_at": producto.created_at.isoformat() if producto.created_at else None
-        }
-        products_data.append(product_dict)
-    
-    return products_data
 
 
 @router.get(

@@ -57,13 +57,15 @@ const UserProfile = () => {
   const loadMyProducts = async () => {
     setLoading(true);
     try {
-      const res = await fetch(`${API_BASE}/users/me/productos`, {
+      const res = await fetch(`${API_BASE}/productos/mis-productos`, {
         headers: { 'Authorization': `Bearer ${token}` }
       });
       const data = await res.json();
-      setMyProducts(data.productos || []);
+      // La API devuelve un array directamente, no un objeto con productos
+      setMyProducts(Array.isArray(data) ? data : []);
     } catch (error) {
       console.error('Error loading products:', error);
+      setMyProducts([]);
     }
     setLoading(false);
   };
@@ -659,13 +661,76 @@ const UserProfile = () => {
               {/* TAB: MIS PRODUCTOS */}
               {activeTab === 'productos' && (
                 <div>
-                  <h2 style={{ fontSize: '1.5rem', fontWeight: '700', color: 'white', marginBottom: '2rem' }}>
-                    Mis Productos Publicados
-                  </h2>
+                  <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '2rem' }}>
+                    <h2 style={{ fontSize: '1.5rem', fontWeight: '700', color: 'white', margin: 0 }}>
+                      Mis Productos Publicados
+                    </h2>
+                    <button
+                      onClick={() => window.location.href = '#mis-ventas'}
+                      style={{
+                        display: 'flex',
+                        alignItems: 'center',
+                        gap: '0.5rem',
+                        padding: '0.75rem 1.5rem',
+                        background: 'linear-gradient(135deg, #a855f7, #7c3aed)',
+                        color: 'white',
+                        border: 'none',
+                        borderRadius: '0.75rem',
+                        fontSize: '0.95rem',
+                        fontWeight: '600',
+                        cursor: 'pointer',
+                        transition: 'all 0.3s ease',
+                        boxShadow: '0 4px 16px rgba(168, 85, 247, 0.4)'
+                      }}
+                      onMouseEnter={(e) => {
+                        e.currentTarget.style.transform = 'translateY(-2px)';
+                        e.currentTarget.style.boxShadow = '0 6px 24px rgba(168, 85, 247, 0.5)';
+                      }}
+                      onMouseLeave={(e) => {
+                        e.currentTarget.style.transform = 'translateY(0)';
+                        e.currentTarget.style.boxShadow = '0 4px 16px rgba(168, 85, 247, 0.4)';
+                      }}
+                    >
+                      <span>📦</span>
+                      <span>Publicar Producto</span>
+                    </button>
+                  </div>
                   {myProducts.length === 0 ? (
-                    <p style={{ textAlign: 'center', color: '#94a3b8', fontSize: '1.125rem', padding: '3rem' }}>
-                      No has publicado productos aún
-                    </p>
+                    <div style={{ 
+                      textAlign: 'center', 
+                      padding: '4rem 2rem',
+                      background: 'linear-gradient(135deg, #1a1d3a 0%, #232544 100%)',
+                      borderRadius: '1.5rem',
+                      border: '2px dashed rgba(148, 163, 184, 0.3)'
+                    }}>
+                      <div style={{ fontSize: '4rem', marginBottom: '1rem' }}>📦</div>
+                      <h3 style={{ color: 'white', fontSize: '1.5rem', marginBottom: '0.5rem' }}>
+                        No has publicado productos aún
+                      </h3>
+                      <p style={{ color: '#94a3b8', marginBottom: '2rem' }}>
+                        Comienza publicando tu primer producto para venderlo en el marketplace
+                      </p>
+                      <button
+                        onClick={() => window.location.href = '#mis-ventas'}
+                        style={{
+                          display: 'inline-flex',
+                          alignItems: 'center',
+                          gap: '0.5rem',
+                          padding: '0.875rem 1.75rem',
+                          background: 'linear-gradient(135deg, #a855f7, #7c3aed)',
+                          color: 'white',
+                          border: 'none',
+                          borderRadius: '0.75rem',
+                          fontSize: '1rem',
+                          fontWeight: '600',
+                          cursor: 'pointer',
+                          transition: 'all 0.3s ease'
+                        }}
+                      >
+                        <span>🚀</span>
+                        <span>Publicar Primer Producto</span>
+                      </button>
+                    </div>
                   ) : (
                     <div style={{ 
                       display: 'grid', 

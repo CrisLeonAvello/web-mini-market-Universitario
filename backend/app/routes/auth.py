@@ -11,6 +11,9 @@ Este módulo contiene todos los endpoints relacionados con:
 from datetime import timedelta
 from fastapi import APIRouter, Depends, HTTPException, status
 from sqlalchemy.orm import Session
+from pydantic import BaseModel
+from google.oauth2 import id_token
+from google.auth.transport import requests as google_requests
 from app.database import get_db
 from app.models.usuario import Usuario
 from app.schemas.auth import UserCreate, UserLogin, UserResponse, Token
@@ -23,6 +26,12 @@ from app.auth import (
 from app.config import settings
 
 router = APIRouter()
+
+
+# Schema para Google Login
+class GoogleLoginRequest(BaseModel):
+    """Request body para login con Google"""
+    id_token: str
 
 @router.post(
     "/register", 
@@ -309,3 +318,135 @@ async def create_admin_user(db: Session = Depends(get_db)):
         "email": "admin@admin.com",
         "password": "admin123"
     }
+
+
+@router.post(
+    "/google",
+    response_model=Token,
+    summary="Iniciar sesión con Google",
+    description="""
+    ## 🔐 Login con Google OAuth
+    
+    Autenticación usando Google Sign-In.
+    
+    ### 📋 Flujo:
+    1. El cliente obtiene un `id_token` de Google
+    2. Envía el token a este endpoint
+    3. El backend verifica el token con Google
+    4. Si es válido, crea/actualiza el usuario
+    5. Retorna un JWT token propio
+    
+    ### 📝 Parámetros:
+    - **id_token**: Token de Google obtenido del cliente
+    
+    ### ✅ Respuesta:
+    - Token JWT de StudiMarket
+    - Tipo de token (Bearer)
+    
+    ### ❌ Errores:
+    - **401**: Token de Google inválido
+    - **500**: Error de servidor
+    """,
+    responses={
+        200: {
+            "description": "Login exitoso",
+            "content": {
+                "application/json": {
+                    "example": {
+                        "access_token": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...",
+                        "token_type": "bearer"
+                    }
+                }
+            }
+        },
+        401: {
+            "description": "Token inválido",
+            "content": {
+                "application/json": {
+                    "example": {"detail": "Token de Google inválido"}
+                }
+            }
+        }
+    }
+)
+async def google_login(
+    google_data: GoogleLoginRequest,
+    db: Session = Depends(get_db)
+):
+    """
+    Autenticación con Google OAuth
+    
+    Verifica el token de Google y crea/actualiza el usuario en la base de datos.
+    """
+    try:
+        # Verificar el token de Google
+        idinfo = id_token.verify_oauth2_token(
+            google_data.id_token,
+            google_requests.Request(),
+            settings.GOOGLE_CLIENT_ID
+        )
+        
+        # Extraer información del usuario
+        email = idinfo.get('email')
+        nombre = idinfo.get('given_name', '')
+        apellido = idinfo.get('family_name', '')
+        
+        if not email:
+            raise HTTPException(
+                status_code=status.HTTP_401_UNAUTHORIZED,
+                detail="No se pudo obtener el email de Google"
+            )
+        
+        # Buscar o crear usuario
+        user = db.query(Usuario).filter(Usuario.email == email).first()
+        
+        if not user:
+            # Crear nuevo usuario
+            # Para usuarios de Google, generamos un hash aleatorio ya que no tienen contraseña
+            import secrets
+            random_password = secrets.token_urlsafe(32)
+            hashed_password = get_password_hash(random_password)
+            
+            user = Usuario(
+                email=email,
+                password_hash=hashed_password,
+                nombre=nombre,
+                apellido=apellido,
+                is_active=True,
+                is_admin=False
+            )
+            db.add(user)
+            db.commit()
+            db.refresh(user)
+        else:
+            # Actualizar información si es necesario
+            if not user.nombre and nombre:
+                user.nombre = nombre
+            if not user.apellido and apellido:
+                user.apellido = apellido
+            db.commit()
+        
+        # Crear token JWT propio
+        access_token_expires = timedelta(minutes=settings.ACCESS_TOKEN_EXPIRE_MINUTES)
+        access_token = create_access_token(
+            data={"sub": user.email, "user_id": user.id_usuario},
+            expires_delta=access_token_expires
+        )
+        
+        return {
+            "access_token": access_token,
+            "token_type": "bearer"
+        }
+        
+    except ValueError as e:
+        # Token inválido
+        raise HTTPException(
+            status_code=status.HTTP_401_UNAUTHORIZED,
+            detail=f"Token de Google inválido: {str(e)}"
+        )
+    except Exception as e:
+        # Error general
+        raise HTTPException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            detail=f"Error al procesar login de Google: {str(e)}"
+        )

@@ -371,6 +371,21 @@
   gap: 1rem;
 }
 
+.google-button-wrapper {
+  width: 100%;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
+
+.google-button-wrapper > div {
+  width: 100% !important;
+}
+
+.google-button-wrapper button {
+  width: 100% !important;
+}
+
 .social-button {
   display: flex;
   align-items: center;

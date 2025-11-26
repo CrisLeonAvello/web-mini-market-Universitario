@@ -16,6 +16,8 @@ import LandingPageSimple from "./components/LandingPageSimple";
 import LoginPage from "./components/LoginPage";
 import ErrorBoundary from "./components/ErrorBoundary";
 import authService from "./services/authService";
+import "./global.css";
+import "./responsive.css";
 import "./styles.css";
 import "./animations.css";
 import "./components.css";

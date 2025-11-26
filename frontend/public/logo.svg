@@ -1,0 +1,28 @@
+<svg width="512" height="512" viewBox="0 0 512 512" fill="none" xmlns="http://www.w3.org/2000/svg">
+  <!-- Background gradient -->
+  <defs>
+    <linearGradient id="bgGradient" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" style="stop-color:#a855f7;stop-opacity:1" />
+      <stop offset="100%" style="stop-color:#ff6b35;stop-opacity:1" />
+    </linearGradient>
+  </defs>
+  
+  <!-- Background -->
+  <rect width="512" height="512" rx="115" fill="url(#bgGradient)"/>
+  
+  <!-- Shopping bag icon -->
+  <g transform="translate(106, 106)">
+    <!-- Bag body -->
+    <path d="M50 100 L250 100 L280 300 L20 300 Z" fill="white" stroke="white" stroke-width="8"/>
+    
+    <!-- Handles -->
+    <path d="M80 100 Q80 40 150 40 Q220 40 220 100" fill="none" stroke="white" stroke-width="16" stroke-linecap="round"/>
+    
+    <!-- Smile -->
+    <path d="M100 200 Q150 240 200 200" fill="none" stroke="#a855f7" stroke-width="12" stroke-linecap="round"/>
+    
+    <!-- Eyes -->
+    <circle cx="120" cy="160" r="10" fill="#a855f7"/>
+    <circle cx="180" cy="160" r="10" fill="#a855f7"/>
+  </g>
+</svg>

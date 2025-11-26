@@ -15,6 +15,7 @@ export default function VenderProducto({ onSuccess, onCancel }) {
 
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
+  const [imagePreview, setImagePreview] = useState('');
 
   const categorias = [
     'Electrónicos',
@@ -39,6 +40,65 @@ export default function VenderProducto({ onSuccess, onCancel }) {
       ...prev,
       [name]: value
     }));
+  };
+
+  const handleImageChange = (e) => {
+    const file = e.target.files[0];
+    if (file) {
+      // Validar tipo de archivo
+      const validTypes = ['image/jpeg', 'image/jpg', 'image/png'];
+      if (!validTypes.includes(file.type)) {
+        setError('Solo se permiten imágenes en formato JPEG, JPG o PNG');
+        return;
+      }
+
+      // Validar tamaño (máximo 2MB para optimizar)
+      if (file.size > 2 * 1024 * 1024) {
+        setError('La imagen no debe superar los 2MB');
+        return;
+      }
+
+      // Crear preview y comprimir imagen
+      const reader = new FileReader();
+      reader.onloadend = () => {
+        // Comprimir imagen antes de guardar
+        const img = new Image();
+        img.onload = () => {
+          const canvas = document.createElement('canvas');
+          let width = img.width;
+          let height = img.height;
+          
+          // Redimensionar si es muy grande (máx 1200px)
+          const maxSize = 1200;
+          if (width > maxSize || height > maxSize) {
+            if (width > height) {
+              height = (height / width) * maxSize;
+              width = maxSize;
+            } else {
+              width = (width / height) * maxSize;
+              height = maxSize;
+            }
+          }
+          
+          canvas.width = width;
+          canvas.height = height;
+          const ctx = canvas.getContext('2d');
+          ctx.drawImage(img, 0, 0, width, height);
+          
+          // Convertir a Base64 con calidad reducida (0.7 = 70%)
+          const compressedBase64 = canvas.toDataURL('image/jpeg', 0.7);
+          
+          setImagePreview(compressedBase64);
+          setFormData(prev => ({
+            ...prev,
+            imagen: compressedBase64
+          }));
+        };
+        img.src = reader.result;
+      };
+      reader.readAsDataURL(file);
+      setError('');
+    }
   };
 
   const handleSubmit = async (e) => {
@@ -76,6 +136,7 @@ export default function VenderProducto({ onSuccess, onCancel }) {
         imagen: '',
         condicion: 'nuevo'
       });
+      setImagePreview('');
 
       if (onSuccess) {
         onSuccess(response);
@@ -208,22 +269,23 @@ export default function VenderProducto({ onSuccess, onCancel }) {
           </div>
         </div>
 
-        {/* URL de Imagen */}
+        {/* Subir Imagen */}
         <div className="form-group">
           <label htmlFor="imagen">
-            <FaImage /> URL de Imagen
+            <FaImage /> Imagen del Producto
           </label>
           <input
-            type="url"
+            type="file"
             id="imagen"
             name="imagen"
-            value={formData.imagen}
-            onChange={handleChange}
-            placeholder="https://ejemplo.com/imagen.jpg"
+            accept="image/jpeg,image/jpg,image/png"
+            onChange={handleImageChange}
+            className="file-input"
           />
-          {formData.imagen && (
+          <p className="form-hint">Formatos permitidos: JPEG, JPG, PNG (máx. 5MB)</p>
+          {imagePreview && (
             <div className="image-preview">
-              <img src={formData.imagen} alt="Preview" onError={(e) => e.target.style.display = 'none'} />
+              <img src={imagePreview} alt="Preview" />
             </div>
           )}
         </div>
