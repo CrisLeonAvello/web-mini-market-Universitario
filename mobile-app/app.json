@@ -66,6 +66,15 @@
           "cameraPermission": "StudiMarket necesita acceso a la cámara para tomar fotos de productos"
         }
       ]
-    ]
+    ],
+    "extra": {
+      "firebaseApiKey": "AIzaSyBFOyqX9nZ0VmEY8J1fRqKjRjKrOyTzK3M",
+      "firebaseAuthDomain": "studimarket-app.firebaseapp.com",
+      "firebaseProjectId": "studimarket-app",
+      "firebaseStorageBucket": "studimarket-app.firebasestorage.app",
+      "firebaseMessagingSenderId": "123456789012",
+      "firebaseAppId": "1:123456789012:web:abcdef123456",
+      "firebaseMeasurementId": "G-XXXXXXXXXX"
+    }
   }
 }

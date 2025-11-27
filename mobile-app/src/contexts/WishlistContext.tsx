@@ -1,14 +1,17 @@
 import React, { createContext, useContext, useEffect, useState } from 'react';
-import AsyncStorage from '@react-native-async-storage/async-storage';
+import * as wishlistService from '../services/wishlistService';
 
 interface WishlistContextType {
   wishlist: number[];
+  wishlistItems: any[];
+  loading: boolean;
   addToWishlist: (productId: number) => Promise<void>;
   removeFromWishlist: (productId: number) => Promise<void>;
   toggleWishlist: (productId: number) => Promise<boolean>;
   isInWishlist: (productId: number) => boolean;
   clearWishlist: () => Promise<void>;
   getWishlistCount: () => number;
+  refreshWishlist: () => Promise<void>;
 }
 
 const WishlistContext = createContext<WishlistContextType | undefined>(undefined);
@@ -23,6 +26,8 @@ export function useWishlist() {
 
 export function WishlistProvider({ children }: { children: React.ReactNode }) {
   const [wishlist, setWishlist] = useState<number[]>([]);
+  const [wishlistItems, setWishlistItems] = useState<any[]>([]);
+  const [loading, setLoading] = useState(false);
   const [loaded, setLoaded] = useState(false);
 
   useEffect(() => {
@@ -31,42 +36,54 @@ export function WishlistProvider({ children }: { children: React.ReactNode }) {
 
   const loadWishlist = async () => {
     try {
-      const stored = await AsyncStorage.getItem('wishlist');
-      if (stored) {
-        const parsed = JSON.parse(stored);
-        setWishlist(Array.isArray(parsed) ? parsed : []);
-      }
+      setLoading(true);
+      const items = await wishlistService.getWishlist();
+      setWishlistItems(items);
+      // Extraer solo los IDs de productos
+      const productIds = items.map((item: any) => item.producto_id);
+      setWishlist(productIds);
+      console.log('❤️ Wishlist cargada:', productIds.length, 'items');
     } catch (error) {
       console.error('Error cargando wishlist:', error);
       setWishlist([]);
+      setWishlistItems([]);
     } finally {
       setLoaded(true);
-    }
-  };
-
-  const saveWishlist = async (newWishlist: number[]) => {
-    try {
-      await AsyncStorage.setItem('wishlist', JSON.stringify(newWishlist));
-    } catch (error) {
-      console.error('Error guardando wishlist:', error);
+      setLoading(false);
     }
   };
 
   const addToWishlist = async (productId: number) => {
-    const newWishlist = [...wishlist];
-    if (!newWishlist.includes(productId)) {
-      newWishlist.push(productId);
-      setWishlist(newWishlist);
-      await saveWishlist(newWishlist);
+    try {
+      setLoading(true);
+      await wishlistService.addToWishlist(productId);
+      // Recargar wishlist desde el backend
+      await loadWishlist();
       console.log(`❤️ Agregado a favoritos: ${productId}`);
+    } catch (error) {
+      console.error('Error agregando a wishlist:', error);
+      throw error;
+    } finally {
+      setLoading(false);
     }
   };
 
   const removeFromWishlist = async (productId: number) => {
-    const newWishlist = wishlist.filter((id) => id !== productId);
-    setWishlist(newWishlist);
-    await saveWishlist(newWishlist);
-    console.log(`💔 Removido de favoritos: ${productId}`);
+    try {
+      setLoading(true);
+      // Buscar el favorito_id del producto
+      const item = wishlistItems.find((i: any) => i.producto_id === productId);
+      if (item) {
+        await wishlistService.removeFromWishlist(item.id_favorito);
+        await loadWishlist();
+        console.log(`💔 Removido de favoritos: ${productId}`);
+      }
+    } catch (error) {
+      console.error('Error removiendo de wishlist:', error);
+      throw error;
+    } finally {
+      setLoading(false);
+    }
   };
 
   const toggleWishlist = async (productId: number): Promise<boolean> => {
@@ -84,25 +101,44 @@ export function WishlistProvider({ children }: { children: React.ReactNode }) {
   };
 
   const clearWishlist = async () => {
-    setWishlist([]);
-    await saveWishlist([]);
-    console.log('🔥 Wishlist limpiada');
+    try {
+      setLoading(true);
+      // Eliminar todos los favoritos uno por uno
+      for (const item of wishlistItems) {
+        await wishlistService.removeFromWishlist(item.id_favorito);
+      }
+      setWishlist([]);
+      setWishlistItems([]);
+      console.log('🔥 Wishlist limpiada');
+    } catch (error) {
+      console.error('Error limpiando wishlist:', error);
+      throw error;
+    } finally {
+      setLoading(false);
+    }
   };
 
   const getWishlistCount = (): number => {
     return wishlist.length;
   };
 
+  const refreshWishlist = async () => {
+    await loadWishlist();
+  };
+
   return (
     <WishlistContext.Provider
       value={{
         wishlist,
+        wishlistItems,
+        loading,
         addToWishlist,
         removeFromWishlist,
         toggleWishlist,
         isInWishlist,
         clearWishlist,
         getWishlistCount,
+        refreshWishlist,
       }}
     >
       {children}

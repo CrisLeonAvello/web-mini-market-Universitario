@@ -46,12 +46,14 @@ export interface ProductsContextType {
 
 export interface CartContextType {
   items: CartItem[];
-  addItem: (product: Product, quantity: number) => void;
-  addToCart: (product: Product, quantity?: number) => void;
-  removeItem: (productId: number) => void;
-  removeFromCart: (productId: number) => void;
-  updateQuantity: (productId: number, quantity: number) => void;
-  clearCart: () => void;
+  addItem: (product: Product, quantity: number) => Promise<void>;
+  addToCart: (product: Product, quantity?: number) => Promise<void>;
+  removeItem: (productId: number) => Promise<void>;
+  removeFromCart: (productId: number) => Promise<void>;
+  updateQuantity: (productId: number, quantity: number) => Promise<void>;
+  clearCart: () => Promise<void>;
   total: number;
   itemCount: number;
+  loading?: boolean;
+  refreshCart?: () => Promise<void>;
 }

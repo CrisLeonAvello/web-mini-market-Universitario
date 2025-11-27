@@ -3,16 +3,12 @@ import { ENDPOINTS } from '../constants/config';
 import { saveToken, saveUser, removeToken, removeUser } from './storageService';
 
 export const login = async (email: string, password: string) => {
-  const formData = new URLSearchParams();
-  formData.append('username', email);
-  formData.append('password', password);
-
   const response = await apiRequest(ENDPOINTS.LOGIN, {
     method: 'POST',
-    headers: {
-      'Content-Type': 'application/x-www-form-urlencoded',
+    data: {
+      email,
+      password,
     },
-    data: formData.toString(),
   });
 
   if (response.access_token) {

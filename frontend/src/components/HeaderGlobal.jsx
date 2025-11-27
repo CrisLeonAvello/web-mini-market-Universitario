@@ -1,9 +1,10 @@
-import React from 'react';
+import React, { useState } from 'react';
 import { Avatar, AvatarImage, AvatarFallback } from './ui/avatar';
 import { Button } from './ui/button';
 import { DropdownMenu, DropdownMenuTrigger, DropdownMenuContent, DropdownMenuItem, DropdownMenuLabel, DropdownMenuSeparator } from './ui/dropdown-menu';
 import { useLocation } from "react-router-dom";
-import { FaUser, FaBoxOpen, FaHeart, FaCog, FaSignOutAlt } from 'react-icons/fa';
+import { FaUser, FaBoxOpen, FaHeart, FaCog, FaSignOutAlt, FaShoppingCart } from 'react-icons/fa';
+import CartModal from './CartModal';
 
 function safeUseLocation() {
   try {
@@ -16,6 +17,7 @@ function safeUseLocation() {
 export default function HeaderGlobal({ onShowProductos, onShowProfile, onShowLogin, onLogout, user, isProductosPage }) {
   const location = safeUseLocation();
   const isProductosTab = isProductosPage || location.pathname === "/productos" || window.location.hash === "#productos";
+  const [showCartModal, setShowCartModal] = useState(false);
 
   return (
     <header className="header-global">
@@ -31,6 +33,14 @@ export default function HeaderGlobal({ onShowProductos, onShowProfile, onShowLog
           <div className="header-user-menu">
             {user ? (
               <>
+                <button 
+                  className="btn-cart-header"
+                  onClick={() => setShowCartModal(true)}
+                  title="Ver carrito de compras"
+                >
+                  <FaShoppingCart />
+                  <span>Carrito</span>
+                </button>
                 <button 
                   className="btn-publicar-producto-header"
                   onClick={() => window.location.href='#mis-ventas'}
@@ -57,10 +67,7 @@ export default function HeaderGlobal({ onShowProductos, onShowProfile, onShowLog
                     <DropdownMenuSeparator />
                     <DropdownMenuItem onClick={onShowProfile} className="user-menu-item"><FaUser className="user-menu-icon"/>Mi Perfil</DropdownMenuItem>
                     <DropdownMenuItem onClick={() => window.location.href='#mis-ventas'} className="user-menu-item"><FaBoxOpen className="user-menu-icon"/>Mis Ventas</DropdownMenuItem>
-                    <DropdownMenuItem onClick={() => window.location.href='/pedidos'} className="user-menu-item"><FaBoxOpen className="user-menu-icon"/>Mis Pedidos</DropdownMenuItem>
-                    <DropdownMenuItem onClick={() => window.location.href='/favoritos'} className="user-menu-item"><FaHeart className="user-menu-icon-heart"/>Favoritos</DropdownMenuItem>
                     <DropdownMenuSeparator />
-                    <DropdownMenuItem onClick={() => window.location.href='/configuracion'} className="user-menu-item"><FaCog className="user-menu-icon"/>Configuración</DropdownMenuItem>
                     <DropdownMenuItem onClick={onLogout} className="user-menu-item"><FaSignOutAlt className="user-menu-icon"/>Cerrar Sesión</DropdownMenuItem>
                   </DropdownMenuContent>
                 </DropdownMenu>
@@ -147,10 +154,7 @@ export default function HeaderGlobal({ onShowProductos, onShowProfile, onShowLog
                   <DropdownMenuSeparator />
                   <DropdownMenuItem onClick={onShowProfile} className="user-menu-item"><FaUser className="user-menu-icon"/>Mi Perfil</DropdownMenuItem>
                   <DropdownMenuItem onClick={() => window.location.href='#mis-ventas'} className="user-menu-item"><FaBoxOpen className="user-menu-icon"/>Mis Ventas</DropdownMenuItem>
-                  <DropdownMenuItem onClick={() => window.location.href='/pedidos'} className="user-menu-item"><FaBoxOpen className="user-menu-icon"/>Mis Pedidos</DropdownMenuItem>
-                  <DropdownMenuItem onClick={() => window.location.href='/favoritos'} className="user-menu-item"><FaHeart className="user-menu-icon-heart"/>Favoritos</DropdownMenuItem>
                   <DropdownMenuSeparator />
-                  <DropdownMenuItem onClick={() => window.location.href='/configuracion'} className="user-menu-item"><FaCog className="user-menu-icon"/>Configuración</DropdownMenuItem>
                   <DropdownMenuItem onClick={onLogout} className="user-menu-item"><FaSignOutAlt className="user-menu-icon"/>Cerrar Sesión</DropdownMenuItem>
                 </DropdownMenuContent>
                 </DropdownMenu>
@@ -161,6 +165,9 @@ export default function HeaderGlobal({ onShowProductos, onShowProfile, onShowLog
           </div>
         </div>
       )}
+      
+      {/* Modal del carrito */}
+      <CartModal isOpen={showCartModal} onClose={() => setShowCartModal(false)} />
     </header>
   );
 }

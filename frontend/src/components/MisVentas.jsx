@@ -2,8 +2,10 @@ import React, { useState, useEffect } from 'react';
 import VenderProducto from '../components/VenderProducto';
 import { getMyProducts, deleteProduct, toggleProductStatus } from '../services/api';
 import { FaPlus, FaEdit, FaTrash, FaPause, FaPlay, FaEye } from 'react-icons/fa';
+import { useProducts } from '../contexts/ProductsContext';
 
 export default function MisVentas({ onShowProfile, onShowLogin, onLogout, user }) {
+  const { loadProducts } = useProducts(); // Obtener función para refrescar productos globales
   const [misProductos, setMisProductos] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
@@ -34,6 +36,8 @@ export default function MisVentas({ onShowProfile, onShowLogin, onLogout, user }
     setNotification('✅ Producto publicado exitosamente');
     setTimeout(() => setNotification(''), 3000);
     cargarProductos();
+    // Refrescar también la lista global de productos
+    loadProducts();
   };
 
   const handleEliminar = async (productId) => {

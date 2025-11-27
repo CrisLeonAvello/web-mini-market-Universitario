@@ -288,7 +288,7 @@ export default function LoginPage({ onLogin, onBackToHome }) {
                 text={isLogin ? "signin_with" : "signup_with"}
                 shape="rectangular"
                 size="large"
-                width="100%"
+                width={window.innerWidth < 400 ? 300 : 400}
               />
             </div>
           </div>

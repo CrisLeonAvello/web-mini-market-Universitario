@@ -171,6 +171,16 @@ export async function clearCart() {
   });
 }
 
+/**
+ * Procesar checkout
+ */
+export async function processCheckout(checkoutData) {
+  return apiRequest('/carrito/checkout', {
+    method: 'POST',
+    body: JSON.stringify(checkoutData),
+  });
+}
+
 // ============================================================================
 // AUTENTICACIÓN
 // ============================================================================

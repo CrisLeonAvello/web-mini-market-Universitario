@@ -1485,6 +1485,7 @@
     align-items: center;
     gap: 0.5rem;
     width: fit-content;
+    color: white;
 }
 
 .quantity-btn {
@@ -2924,7 +2925,7 @@ body {
 }
 
 .modal-quantity-section {
-  background: #f8f9fa;
+  background: #f8f9fa00;
   padding: 1.5rem;
   border-radius: 12px;
 }
@@ -3799,7 +3800,7 @@ body {
   align-items: center;
   gap: 0.5rem;
   padding: 0.625rem 1.25rem;
-  background: linear-gradient(135deg, #a855f7, #7c3aed);
+  background: none;
   color: white;
   border: none;
   border-radius: 12px;
@@ -4572,8 +4573,8 @@ body {
   padding: 0.875rem 1rem;
   border-radius: 12px;
   border: 1px solid rgba(148, 163, 184, 0.2);
-  background: rgba(255, 255, 255, 0.05);
-  color: white;
+  background: white;
+  color: black;
   font-size: 1rem;
   transition: all 0.3s ease;
 }

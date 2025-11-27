@@ -44,19 +44,24 @@ def verify_token(credentials: HTTPAuthorizationCredentials = Depends(security)):
     """Verificar token JWT"""
     token = credentials.credentials
     try:
+        print(f"🔐 Verificando token: {token[:50]}...")
         payload = jwt.decode(token, settings.SECRET_KEY, algorithms=[settings.ALGORITHM])
+        print(f"✅ Token decodificado: {payload}")
         email: str = payload.get("sub")
         if email is None:
+            print("❌ Email no encontrado en token")
             raise HTTPException(
                 status_code=status.HTTP_401_UNAUTHORIZED,
-                detail="Token inválido",
+                detail="Token inválido - no hay email",
                 headers={"WWW-Authenticate": "Bearer"},
             )
+        print(f"✅ Email extraído: {email}")
         return email
-    except JWTError:
+    except JWTError as e:
+        print(f"❌ Error JWT: {str(e)}")
         raise HTTPException(
             status_code=status.HTTP_401_UNAUTHORIZED,
-            detail="Token inválido",
+            detail=f"Token inválido: {str(e)}",
             headers={"WWW-Authenticate": "Bearer"},
         )
 

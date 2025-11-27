@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { useCart } from '../contexts/CartContext';
+import { addToCart } from '../services/api';
 import { useWishlist } from '../contexts/WishlistContext';
 
 export default function ProductCardNew({ product, onOpenModal }) {
@@ -21,7 +21,6 @@ export default function ProductCardNew({ product, onOpenModal }) {
     title: product.title?.substring(0, 30) + '...' 
   });
 
-  const { addToCart } = useCart();
   const { wishlist, addToWishlist, removeFromWishlist } = useWishlist();
   
   const isInWishlist = wishlist.includes(product.id.toString());
@@ -71,29 +70,24 @@ export default function ProductCardNew({ product, onOpenModal }) {
     setTimeout(() => setShowNotification(''), 2000);
   };
 
-  const handleAddToCart = (e) => {
+  const handleAddToCart = async (e) => {
     try {
       console.log('🛒 handleAddToCart called for product:', product.id);
       e.preventDefault();
       e.stopPropagation();
       
-      if (!addToCart) {
-        console.error('❌ addToCart function not available');
-        showNotificationMessage('❌ Error: Función no disponible');
+      if (stock <= 0) {
+        showNotificationMessage('❌ Sin stock disponible');
         return;
       }
       
-      if (stock > 0) {
-        console.log('✅ Adding to cart:', product.id);
-        const result = addToCart(product.id.toString(), 1);
-        console.log('✅ AddToCart result:', result);
-        showNotificationMessage('✅ Agregado al carrito');
-      } else {
-        showNotificationMessage('❌ Sin stock disponible');
-      }
+      console.log('✅ Adding to cart via API:', product.id);
+      await addToCart(product.id, 1);
+      console.log('✅ Product added to cart successfully');
+      showNotificationMessage('✅ Agregado al carrito');
     } catch (error) {
       console.error('❌ Error in handleAddToCart:', error);
-      showNotificationMessage('❌ Error al agregar al carrito');
+      showNotificationMessage('❌ ' + (error.message || 'Error al agregar al carrito'));
     }
   };
 

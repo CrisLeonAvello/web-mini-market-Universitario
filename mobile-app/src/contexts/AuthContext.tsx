@@ -1,7 +1,8 @@
 import React, { createContext, useState, useEffect, useContext } from 'react';
 import { AuthContextType, User } from '../types/types';
-import * as authService from '../services/authService';
+import * as firebaseAuthService from '../services/firebaseAuthService';
 import { getToken, getUser } from '../services/storageService';
+import { onAuthStateChange } from '../services/firebaseAuthService';
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
 
@@ -12,6 +13,23 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
 
   useEffect(() => {
     loadStoredAuth();
+    
+    // Observador de cambios en Firebase Auth
+    const unsubscribe = onAuthStateChange(async (firebaseUser) => {
+      if (firebaseUser) {
+        // Usuario autenticado en Firebase
+        const storedUser = await getUser();
+        if (storedUser) {
+          setUser(storedUser);
+        }
+      } else {
+        // Usuario no autenticado
+        setUser(null);
+        setToken(null);
+      }
+    });
+
+    return () => unsubscribe();
   }, []);
 
   const loadStoredAuth = async () => {
@@ -31,29 +49,43 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
 
   const login = async (email: string, password: string) => {
     try {
-      const response = await authService.login(email, password);
+      setLoading(true);
+      const response = await firebaseAuthService.loginWithFirebase(email, password);
       setToken(response.token);
-      setUser(response.user);
+      setUser(response.backendUser);
     } catch (error) {
       throw error;
+    } finally {
+      setLoading(false);
     }
   };
 
   const register = async (nombre: string, email: string, password: string) => {
     try {
-      await authService.register(nombre, email, password);
+      setLoading(true);
+      const response = await firebaseAuthService.registerWithFirebase(nombre, email, password);
+      setUser(response.backendUser);
+      // Auto-login después del registro
+      const loginResponse = await firebaseAuthService.loginWithFirebase(email, password);
+      setToken(loginResponse.token);
+      setUser(loginResponse.backendUser);
     } catch (error) {
       throw error;
+    } finally {
+      setLoading(false);
     }
   };
 
   const logout = async () => {
     try {
-      await authService.logout();
+      setLoading(true);
+      await firebaseAuthService.logoutFromFirebase();
       setToken(null);
       setUser(null);
     } catch (error) {
       console.error('Error logging out:', error);
+    } finally {
+      setLoading(false);
     }
   };
 

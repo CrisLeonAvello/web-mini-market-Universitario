@@ -1,84 +1,126 @@
 import React, { createContext, useState, useContext, useEffect } from 'react';
 import { CartContextType, CartItem, Product } from '../types/types';
-import AsyncStorage from '@react-native-async-storage/async-storage';
+import * as cartService from '../services/cartService';
 
 const CartContext = createContext<CartContextType | undefined>(undefined);
 
-const CART_STORAGE_KEY = '@studimarket_cart';
-
 export const CartProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
   const [items, setItems] = useState<CartItem[]>([]);
+  const [loading, setLoading] = useState(false);
+  const [total, setTotal] = useState(0);
+  const [itemCount, setItemCount] = useState(0);
 
   useEffect(() => {
     loadCart();
   }, []);
 
-  useEffect(() => {
-    saveCart();
-  }, [items]);
-
   const loadCart = async () => {
     try {
-      const stored = await AsyncStorage.getItem(CART_STORAGE_KEY);
-      if (stored) {
-        setItems(JSON.parse(stored));
-      }
+      setLoading(true);
+      const cartData = await cartService.getCart();
+      // Convertir los items del backend al formato del contexto
+      const mappedItems = cartData.items.map(item => ({
+        id: item.id_item,
+        product: {
+          id: item.producto.id_producto,
+          titulo: item.producto.titulo,
+          precio: item.precio_unitario,
+          imagen_url: item.producto.imagen_url,
+          categoria: item.producto.categoria,
+          descripcion: item.producto.descripcion,
+          stock: item.producto.stock,
+        },
+        quantity: item.cantidad,
+      }));
+      setItems(mappedItems);
+      setTotal(cartData.total);
+      setItemCount(cartData.total_productos);
     } catch (error) {
       console.error('Error loading cart:', error);
+      // Si falla, mantener carrito vacío
+      setItems([]);
+      setTotal(0);
+      setItemCount(0);
+    } finally {
+      setLoading(false);
     }
   };
 
-  const saveCart = async () => {
+  const addItem = async (product: Product, quantity: number) => {
     try {
-      await AsyncStorage.setItem(CART_STORAGE_KEY, JSON.stringify(items));
+      setLoading(true);
+      await cartService.addToCart({
+        producto_id: product.id,
+        cantidad: quantity,
+      });
+      // Recargar el carrito desde el backend
+      await loadCart();
     } catch (error) {
-      console.error('Error saving cart:', error);
+      console.error('Error adding to cart:', error);
+      throw error;
+    } finally {
+      setLoading(false);
     }
   };
 
-  const addItem = (product: Product, quantity: number) => {
-    setItems(prev => {
-      const existing = prev.find(item => item.product.id === product.id);
-      if (existing) {
-        return prev.map(item =>
-          item.product.id === product.id
-            ? { ...item, quantity: item.quantity + quantity }
-            : item
-        );
+  const removeItem = async (productId: number) => {
+    try {
+      setLoading(true);
+      // Buscar el item_id del producto
+      const item = items.find(i => i.product.id === productId);
+      if (item) {
+        await cartService.removeFromCart(item.id);
+        await loadCart();
       }
-      return [...prev, { id: Date.now(), product, quantity }];
-    });
+    } catch (error) {
+      console.error('Error removing from cart:', error);
+      throw error;
+    } finally {
+      setLoading(false);
+    }
   };
 
-  const removeItem = (productId: number) => {
-    setItems(prev => prev.filter(item => item.product.id !== productId));
-  };
-
-  const updateQuantity = (productId: number, quantity: number) => {
+  const updateQuantity = async (productId: number, quantity: number) => {
     if (quantity <= 0) {
-      removeItem(productId);
+      await removeItem(productId);
       return;
     }
-    setItems(prev =>
-      prev.map(item =>
-        item.product.id === productId ? { ...item, quantity } : item
-      )
-    );
+    try {
+      setLoading(true);
+      const item = items.find(i => i.product.id === productId);
+      if (item) {
+        await cartService.updateCartItem(item.id, { cantidad: quantity });
+        await loadCart();
+      }
+    } catch (error) {
+      console.error('Error updating quantity:', error);
+      throw error;
+    } finally {
+      setLoading(false);
+    }
   };
 
-  const clearCart = () => {
-    setItems([]);
+  const clearCart = async () => {
+    try {
+      setLoading(true);
+      await cartService.clearCart();
+      setItems([]);
+      setTotal(0);
+      setItemCount(0);
+    } catch (error) {
+      console.error('Error clearing cart:', error);
+      throw error;
+    } finally {
+      setLoading(false);
+    }
   };
 
-  const total = items.reduce((sum, item) => sum + item.product.precio * item.quantity, 0);
-  const itemCount = items.reduce((sum, item) => sum + item.quantity, 0);
-
-  const addToCart = (product: Product, quantity: number = 1) => {
-    addItem(product, quantity);
+  const addToCart = async (product: Product, quantity: number = 1) => {
+    await addItem(product, quantity);
   };
 
-  const removeFromCart = (productId: number) => {
-    removeItem(productId);
+  const removeFromCart = async (productId: number) => {
+    await removeItem(productId);
   };
 
   return (
@@ -93,6 +135,8 @@ export const CartProvider: React.FC<{ children: React.ReactNode }> = ({ children
         clearCart,
         total,
         itemCount,
+        loading,
+        refreshCart: loadCart,
       }}
     >
       {children}

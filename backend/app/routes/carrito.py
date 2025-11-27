@@ -34,10 +34,9 @@ async def obtener_carrito(
     """
     Obtener el carrito activo del usuario actual
     """
-    # Buscar o crear carrito activo
+    # Buscar carrito (activo o inactivo)
     carrito = db.query(Carrito).filter(
-        Carrito.usuario_id == current_user.id_usuario,
-        Carrito.is_active == True
+        Carrito.usuario_id == current_user.id_usuario
     ).first()
     
     if not carrito:
@@ -51,14 +50,18 @@ async def obtener_carrito(
         db.add(carrito)
         db.commit()
         db.refresh(carrito)
+    elif not carrito.is_active:
+        # Reactivar carrito inactivo
+        carrito.is_active = True
+        db.commit()
     
     # Obtener items con productos
     items = db.query(ItemCarrito).filter(
         ItemCarrito.carrito_id == carrito.id_carrito
     ).all()
     
-    # Calcular totales
-    subtotal = sum(item.subtotal for item in items)
+    # Calcular totales (convertir todo a float para evitar errores de tipo)
+    subtotal = float(sum(item.subtotal for item in items))
     impuesto = float(carrito.impuesto)
     envio = float(carrito.envio)
     total = subtotal + impuesto + envio
@@ -287,11 +290,16 @@ async def realizar_checkout(
     """
     Procesar el checkout y crear las ventas
     """
+    print(f"🛒 CHECKOUT - Usuario: {current_user.email} (ID: {current_user.id_usuario})")
+    print(f"📦 Datos de checkout: {checkout_data.dict()}")
+    
     # Buscar carrito activo
     carrito = db.query(Carrito).filter(
         Carrito.usuario_id == current_user.id_usuario,
         Carrito.is_active == True
     ).first()
+    
+    print(f"🛒 Carrito encontrado: {carrito.id_carrito if carrito else 'None'}")
     
     if not carrito:
         raise HTTPException(
@@ -300,9 +308,11 @@ async def realizar_checkout(
         )
     
     # Obtener items
+    print(f"📋 Obteniendo items del carrito {carrito.id_carrito}...")
     items = db.query(ItemCarrito).filter(
         ItemCarrito.carrito_id == carrito.id_carrito
     ).all()
+    print(f"📦 Items encontrados: {len(items)}")
     
     if not items:
         raise HTTPException(
@@ -313,10 +323,19 @@ async def realizar_checkout(
     # Crear ventas y verificar stock
     ventas_creadas = []
     try:
-        for item in items:
-            producto = item.producto
+        print(f"🔄 Procesando {len(items)} items...")
+        for i, item in enumerate(items):
+            print(f"  Item {i+1}: Producto ID {item.producto_id}, Cantidad {item.cantidad}")
+            
+            try:
+                producto = item.producto
+                print(f"  ✅ Producto cargado: {producto.titulo if producto else 'None'}")
+            except Exception as e:
+                print(f"  ❌ Error al cargar producto: {str(e)}")
+                raise
             
             # Verificar stock
+            print(f"  📊 Stock disponible: {producto.stock}")
             if producto.stock < item.cantidad:
                 raise HTTPException(
                     status_code=status.HTTP_400_BAD_REQUEST,
@@ -324,17 +343,27 @@ async def realizar_checkout(
                 )
             
             # Crear venta
-            venta = Venta(
-                comprador_id=current_user.id_usuario,
-                vendedor_id=producto.vendedor_id,
-                producto_id=producto.id_producto,
-                cantidad=item.cantidad,
-                precio_total=Decimal(str(item.subtotal)),
-                estado_venta="PENDIENTE",
-                direccion_envio=checkout_data.direccion_envio,
-                metodo_pago=checkout_data.metodo_pago,
-                notas=checkout_data.notas
-            )
+            print(f"  💰 Creando venta...")
+            print(f"    Comprador: {current_user.id_usuario}")
+            print(f"    Vendedor: {producto.vendedor_id}")
+            print(f"    Precio unitario: {item.precio_unitario}")
+            print(f"    Precio total: {item.subtotal}")
+            
+            try:
+                venta = Venta(
+                    comprador_id=current_user.id_usuario,
+                    vendedor_id=producto.vendedor_id,
+                    producto_id=producto.id_producto,
+                    cantidad=item.cantidad,
+                    precio_unitario=Decimal(str(item.precio_unitario)),  # ← AGREGADO
+                    precio_total=Decimal(str(item.subtotal)),
+                    estado_venta="PENDIENTE",
+                    metodo_pago=checkout_data.metodo_pago
+                )
+                print(f"  ✅ Venta creada exitosamente")
+            except Exception as e:
+                print(f"  ❌ Error al crear venta: {str(e)}")
+                raise
             db.add(venta)
             ventas_creadas.append(venta)
             

@@ -7,7 +7,6 @@ import { Ionicons } from '@expo/vector-icons';
 import { useAuth } from '../contexts/AuthContext';
 import { COLORS } from '../constants/config';
 
-import LandingScreen from '../screens/LandingScreen';
 import LoginScreen from '../screens/LoginScreen';
 import RegisterScreen from '../screens/RegisterScreen';
 import HomeScreen from '../screens/HomeScreen';
@@ -45,14 +44,6 @@ const MainTabs = () => {
         options={{ 
           title: 'Inicio', 
           tabBarIcon: ({ color, size }) => <Ionicons name='home' size={size} color={color} /> 
-        }} 
-      />
-      <Tab.Screen 
-        name='Products' 
-        component={ProductsScreen} 
-        options={{ 
-          title: 'Productos', 
-          tabBarIcon: ({ color, size }) => <Ionicons name='grid' size={size} color={color} /> 
         }} 
       />
       <Tab.Screen 
@@ -157,15 +148,9 @@ const AppNavigator = () => {
           headerTintColor: '#fff',
           headerTitleStyle: { fontWeight: 'bold' }
         }}
+        initialRouteName='MainTabs'
       >
-        {/* Landing como pantalla inicial */}
-        <Stack.Screen 
-          name='Landing' 
-          component={LandingScreen} 
-          options={{ headerShown: false }} 
-        />
-        
-        {/* Tabs principales (acceso público) */}
+        {/* Tabs principales como pantalla inicial */}
         <Stack.Screen 
           name='MainTabs' 
           component={MainTabs} 

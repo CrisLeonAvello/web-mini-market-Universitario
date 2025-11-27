@@ -1,12 +1,23 @@
-﻿import React, { useEffect } from 'react';
+﻿import React, { useEffect, useState } from 'react';
 import { View, Text, StyleSheet, ScrollView, TouchableOpacity, Alert } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
-import GradientView from '../components/GradientView';
+import { LinearGradient } from 'expo-linear-gradient';
+import { Card } from '../components/ui/Card';
+import { Avatar } from '../components/ui/Avatar';
+import { Badge } from '../components/ui/Badge';
+import { Button } from '../components/ui/Button';
 import { useAuth } from '../contexts/AuthContext';
-import { COLORS } from '../constants/config';
+import { COLORS, GRADIENTS } from '../constants/config';
 
 export default function ProfileScreen({ navigation }: any) {
   const { user, logout } = useAuth();
+  
+  const stats = {
+    sales: 0,
+    purchases: 0,
+    reviews: 0,
+    rating: 0,
+  };
 
   useEffect(() => {
     if (!user) {
@@ -73,106 +84,208 @@ export default function ProfileScreen({ navigation }: any) {
     <ScrollView 
       style={styles.container}
       contentContainerStyle={{ flexGrow: 1 }}
-      showsVerticalScrollIndicator={true}
+      showsVerticalScrollIndicator={false}
     >
       {/* Header con gradiente */}
-      <GradientView
-        colors={[COLORS.primary, COLORS.secondary]}
+      <LinearGradient
+        colors={GRADIENTS.primary}
         start={{ x: 0, y: 0 }}
         end={{ x: 1, y: 1 }}
         style={styles.header}
       >
-        <View style={styles.avatarContainer}>
-          <Ionicons name="person" size={48} color="#fff" />
+        <View style={styles.avatarWrapper}>
+          <Avatar
+            name={user?.nombre || 'Usuario'}
+            size={100}
+            style={styles.avatar}
+          />
+          <TouchableOpacity style={styles.editAvatarButton}>
+            <Ionicons name="camera" size={20} color="#fff" />
+          </TouchableOpacity>
         </View>
         <Text style={styles.userName}>{user?.nombre || 'Usuario'}</Text>
         <Text style={styles.userEmail}>{user?.email}</Text>
-      </GradientView>
+      </LinearGradient>
+
+      {/* Stats Cards */}
+      <View style={styles.statsContainer}>
+        <Card variant="elevated" style={styles.statCard}>
+          <View style={styles.statIconContainer}>
+            <Ionicons name="cart" size={24} color={COLORS.primary} />
+          </View>
+          <Text style={styles.statValue}>{stats.purchases}</Text>
+          <Text style={styles.statLabel}>Compras</Text>
+        </Card>
+
+        <Card variant="elevated" style={styles.statCard}>
+          <View style={styles.statIconContainer}>
+            <Ionicons name="storefront" size={24} color={COLORS.secondary} />
+          </View>
+          <Text style={styles.statValue}>{stats.sales}</Text>
+          <Text style={styles.statLabel}>Ventas</Text>
+        </Card>
+
+        <Card variant="elevated" style={styles.statCard}>
+          <View style={styles.statIconContainer}>
+            <Ionicons name="star" size={24} color={COLORS.warning} />
+          </View>
+          <Text style={styles.statValue}>{stats.rating.toFixed(1)}</Text>
+          <Text style={styles.statLabel}>Rating</Text>
+        </Card>
+      </View>
 
       {/* Menu Items */}
       <View style={styles.menuContainer}>
+        <Text style={styles.sectionTitle}>Mi Cuenta</Text>
         {menuItems.map((item, index) => (
           <TouchableOpacity
             key={index}
-            style={styles.menuItem}
             onPress={item.onPress}
             activeOpacity={0.7}
           >
-            <View style={styles.menuIconContainer}>
-              <Ionicons name={item.icon as any} size={24} color={COLORS.primary} />
-            </View>
-            <View style={styles.menuContent}>
-              <Text style={styles.menuTitle}>{item.title}</Text>
-              <Text style={styles.menuSubtitle}>{item.subtitle}</Text>
-            </View>
-            <Ionicons name="chevron-forward" size={20} color="#ccc" />
+            <Card variant="elevated" style={styles.menuItem}>
+              <LinearGradient
+                colors={[
+                  `${COLORS.primary}20`,
+                  `${COLORS.primary}05`,
+                ]}
+                start={{ x: 0, y: 0 }}
+                end={{ x: 1, y: 1 }}
+                style={styles.menuIconContainer}
+              >
+                <Ionicons name={item.icon as any} size={24} color={COLORS.primary} />
+              </LinearGradient>
+              <View style={styles.menuContent}>
+                <Text style={styles.menuTitle}>{item.title}</Text>
+                <Text style={styles.menuSubtitle}>{item.subtitle}</Text>
+              </View>
+              <Ionicons name="chevron-forward" size={22} color={COLORS.textMuted} />
+            </Card>
           </TouchableOpacity>
         ))}
       </View>
 
       {/* Logout Button */}
-      <TouchableOpacity style={styles.logoutButton} onPress={handleLogout}>
-        <Ionicons name="log-out-outline" size={24} color="#f44336" />
-        <Text style={styles.logoutText}>Cerrar Sesi\u00f3n</Text>
-      </TouchableOpacity>
+      <View style={styles.logoutContainer}>
+        <Button
+          onPress={handleLogout}
+          variant="outline"
+          fullWidth
+          style={styles.logoutButton}
+        >
+          <View style={styles.logoutContent}>
+            <Ionicons name="log-out-outline" size={22} color={COLORS.danger} />
+            <Text style={styles.logoutText}>Cerrar Sesión</Text>
+          </View>
+        </Button>
+      </View>
 
-      <Text style={styles.version}>Versi\u00f3n 1.0.0</Text>
+      <Text style={styles.version}>StudiMarket v1.0.0</Text>
     </ScrollView>
   );
 }
 
 const styles = StyleSheet.create({
   container: {
+    flex: 1,
     backgroundColor: COLORS.background,
   },
   header: {
-    padding: 40,
+    padding: 32,
+    paddingTop: 60,
+    paddingBottom: 40,
     alignItems: 'center',
   },
-  avatarContainer: {
-    width: 100,
-    height: 100,
-    borderRadius: 50,
-    backgroundColor: 'rgba(255, 255, 255, 0.3)',
-    justifyContent: 'center',
-    alignItems: 'center',
+  avatarWrapper: {
+    position: 'relative',
     marginBottom: 16,
   },
+  avatar: {
+    borderWidth: 4,
+    borderColor: 'rgba(255, 255, 255, 0.3)',
+  },
+  editAvatarButton: {
+    position: 'absolute',
+    bottom: 0,
+    right: 0,
+    width: 36,
+    height: 36,
+    borderRadius: 18,
+    backgroundColor: COLORS.secondary,
+    justifyContent: 'center',
+    alignItems: 'center',
+    borderWidth: 3,
+    borderColor: COLORS.primary,
+  },
   userName: {
-    fontSize: 24,
+    fontSize: 26,
     fontWeight: 'bold',
     color: '#fff',
     marginBottom: 4,
   },
   userEmail: {
-    fontSize: 14,
+    fontSize: 15,
     color: '#fff',
-    opacity: 0.9,
+    opacity: 0.95,
+    marginBottom: 12,
+  },
+  roleBadge: {
+    marginTop: 8,
+  },
+  statsContainer: {
+    flexDirection: 'row',
+    paddingHorizontal: 16,
+    marginTop: -30,
+    marginBottom: 24,
+    gap: 12,
+  },
+  statCard: {
+    flex: 1,
+    alignItems: 'center',
+    padding: 16,
+  },
+  statIconContainer: {
+    width: 48,
+    height: 48,
+    borderRadius: 24,
+    backgroundColor: COLORS.surfaceLight,
+    justifyContent: 'center',
+    alignItems: 'center',
+    marginBottom: 8,
+  },
+  statValue: {
+    fontSize: 24,
+    fontWeight: 'bold',
+    color: COLORS.text,
+    marginBottom: 4,
+  },
+  statLabel: {
+    fontSize: 13,
+    color: COLORS.textSecondary,
   },
   menuContainer: {
-    padding: 16,
+    paddingHorizontal: 16,
+  },
+  sectionTitle: {
+    fontSize: 18,
+    fontWeight: 'bold',
+    color: COLORS.text,
+    marginBottom: 16,
+    marginLeft: 4,
   },
   menuItem: {
     flexDirection: 'row',
     alignItems: 'center',
-    backgroundColor: '#fff',
     padding: 16,
-    borderRadius: 12,
     marginBottom: 12,
-    elevation: 2,
-    shadowColor: '#000',
-    shadowOffset: { width: 0, height: 1 },
-    shadowOpacity: 0.1,
-    shadowRadius: 2,
   },
   menuIconContainer: {
-    width: 48,
-    height: 48,
-    borderRadius: 24,
-    backgroundColor: '#f5f5f5',
+    width: 52,
+    height: 52,
+    borderRadius: 26,
     justifyContent: 'center',
     alignItems: 'center',
-    marginRight: 12,
+    marginRight: 16,
   },
   menuContent: {
     flex: 1,
@@ -180,36 +293,36 @@ const styles = StyleSheet.create({
   menuTitle: {
     fontSize: 16,
     fontWeight: '600',
-    color: '#333',
-    marginBottom: 2,
+    color: COLORS.text,
+    marginBottom: 3,
   },
   menuSubtitle: {
-    fontSize: 12,
-    color: '#999',
+    fontSize: 13,
+    color: COLORS.textSecondary,
+  },
+  logoutContainer: {
+    paddingHorizontal: 16,
+    marginTop: 16,
+    marginBottom: 24,
   },
   logoutButton: {
+    borderColor: COLORS.danger,
+  },
+  logoutContent: {
     flexDirection: 'row',
     alignItems: 'center',
-    justifyContent: 'center',
-    backgroundColor: '#fff',
-    padding: 16,
-    borderRadius: 12,
-    marginHorizontal: 16,
-    marginTop: 8,
-    marginBottom: 24,
-    borderWidth: 1,
-    borderColor: '#f44336',
+    gap: 10,
   },
   logoutText: {
     fontSize: 16,
-    fontWeight: 'bold',
-    color: '#f44336',
-    marginLeft: 8,
+    fontWeight: '600',
+    color: COLORS.danger,
   },
   version: {
     textAlign: 'center',
-    color: '#999',
+    color: COLORS.textMuted,
     fontSize: 12,
     marginBottom: 40,
+    fontWeight: '500',
   },
 });

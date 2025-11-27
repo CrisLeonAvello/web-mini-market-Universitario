@@ -174,10 +174,10 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     alignItems: 'center',
     padding: 16,
-    paddingTop: 40,
-    backgroundColor: '#1a1f3a',
+    paddingTop: 50,
+    backgroundColor: COLORS.surface,
     borderBottomWidth: 1,
-    borderBottomColor: 'rgba(255, 255, 255, 0.1)',
+    borderBottomColor: COLORS.border,
   },
   backButton: {
     marginRight: 16,
@@ -190,7 +190,7 @@ const styles = StyleSheet.create({
   heroSection: {
     alignItems: 'center',
     padding: 32,
-    backgroundColor: '#1a1f3a',
+    backgroundColor: COLORS.surface,
   },
   heroIcon: {
     fontSize: 64,
@@ -220,7 +220,7 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     justifyContent: 'space-around',
     padding: 32,
-    backgroundColor: '#0a0e27',
+    backgroundColor: COLORS.background,
   },
   statCard: {
     alignItems: 'center',
@@ -238,7 +238,7 @@ const styles = StyleSheet.create({
   },
   section: {
     padding: 32,
-    backgroundColor: '#1a1f3a',
+    backgroundColor: COLORS.surface,
     marginTop: 1,
   },
   sectionTitle: {
@@ -255,7 +255,7 @@ const styles = StyleSheet.create({
   featureCard: {
     flexDirection: 'row',
     marginBottom: 24,
-    backgroundColor: '#0a0e27',
+    backgroundColor: COLORS.background,
     padding: 16,
     borderRadius: 12,
   },
@@ -330,7 +330,7 @@ const styles = StyleSheet.create({
   footer: {
     alignItems: 'center',
     padding: 32,
-    backgroundColor: '#0a0e27',
+    backgroundColor: COLORS.background,
   },
   footerText: {
     fontSize: 15,

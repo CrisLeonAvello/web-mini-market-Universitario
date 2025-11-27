@@ -198,20 +198,23 @@ if (currentPage === 'productos') {
     return (
       <ErrorBoundary>
         <AuthProvider>
-          <div className="mis-ventas-page">
-            <HeaderGlobal
-              onShowProfile={handleShowProfile}
-              onShowLogin={handleShowLogin}
-              onLogout={handleLogout}
-              user={user}
-            />
-            <MisVentas
-              onShowProfile={handleShowProfile}
-              onShowLogin={handleShowLogin}
-              onLogout={handleLogout}
-              user={user}
-            />
-          </div>
+          <ProductsProvider>
+            <div className="mis-ventas-page">
+              <HeaderGlobal
+                onShowProfile={handleShowProfile}
+                onShowLogin={handleShowLogin}
+                onLogout={handleLogout}
+                onShowProductos={handleShowProductos}
+                user={user}
+              />
+              <MisVentas
+                onShowProfile={handleShowProfile}
+                onShowLogin={handleShowLogin}
+                onLogout={handleLogout}
+                user={user}
+              />
+            </div>
+          </ProductsProvider>
         </AuthProvider>
       </ErrorBoundary>
     );
